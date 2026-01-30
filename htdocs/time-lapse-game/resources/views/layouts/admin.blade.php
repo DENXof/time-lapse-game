@@ -174,6 +174,46 @@
             bottom: 0;
             z-index: -1;
         }
+
+        /* ========== ДОБАВЛЕННЫЕ СТИЛИ ДЛЯ ВЫПАДАЮЩЕГО МЕНЮ ========== */
+        .dropdown-menu {
+            min-width: 220px;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin: 2px 5px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
+            transform: translateX(3px);
+        }
+
+        .dropdown-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6c757d;
+            padding: 8px 15px;
+        }
+
+        /* Ссылка "Профиль" рядом с именем пользователя */
+        .text-muted a:hover {
+            color: #3498db !important;
+            text-decoration: underline !important;
+        }
+
+        /* Стиль для кнопки выпадающего меню */
+        .dropdown-toggle::after {
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+        /* ========== КОНЕЦ ДОБАВЛЕННЫХ СТИЛЕЙ ========== */
     </style>
 
     @stack('styles')
@@ -208,6 +248,13 @@
                        href="{{ route('admin.games.index') }}">
                         <i class="fas fa-gamepad"></i> Управление играми
                     </a>
+
+                    <!-- ========== НОВЫЙ ПУНКТ МЕНЮ: ПРОФИЛЬ ========== -->
+                    <a class="nav-link {{ Request::is('admin/profile*') ? 'active' : '' }}"
+                       href="{{ route('admin.profile.edit') }}">
+                        <i class="fas fa-user-cog"></i> Профиль
+                    </a>
+                    <!-- ========== КОНЕЦ НОВОГО ПУНКТА ========== -->
 
                     <a class="nav-link {{ Request::is('timeline') ? 'active' : '' }}"
                        href="{{ route('timeline') }}">
@@ -245,12 +292,71 @@
                                     <i class="fas fa-user-shield text-primary me-1"></i>
                                     {{ auth()->guard('admin')->user()->name ?? 'Администратор' }}
                                 </div>
-                                <small class="text-muted">Администратор</small>
+                                <small class="text-muted">
+                                    <a href="{{ route('admin.profile.edit') }}"
+                                       class="text-decoration-none text-muted"
+                                       title="Редактировать профиль"
+                                       style="font-size: 13px;">
+                                        <i class="fas fa-cog me-1"></i>Профиль
+                                    </a>
+                                </small>
                             </div>
-                            <div class="avatar bg-primary rounded-circle d-flex align-items-center justify-content-center"
-                                 style="width: 45px; height: 45px;">
-                                <i class="fas fa-user text-white"></i>
+
+                            <!-- ========== ВЫПАДАЮЩЕЕ МЕНЮ ПОЛЬЗОВАТЕЛЯ ========== -->
+                            <div class="dropdown">
+                                <button class="btn btn-light rounded-circle d-flex align-items-center justify-content-center border-0 shadow-sm dropdown-toggle"
+                                        style="width: 45px; height: 45px;"
+                                        type="button"
+                                        id="userDropdown"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                        title="Меню пользователя">
+                                    <i class="fas fa-user text-primary"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                                    <li>
+                                        <h6 class="dropdown-header">
+                                            <i class="fas fa-user-circle me-2"></i>
+                                            {{ auth()->guard('admin')->user()->name ?? 'Администратор' }}
+                                        </h6>
+                                    </li>
+                                    <li><hr class="dropdown-divider m-1"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.profile.edit') }}">
+                                            <i class="fas fa-user-edit me-2 text-primary"></i>Редактировать профиль
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
+                                            <i class="fas fa-tachometer-alt me-2 text-info"></i>Дашборд
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.games.index') }}">
+                                            <i class="fas fa-gamepad me-2 text-success"></i>Управление играми
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('admin.genres.index') }}">
+                                            <i class="fas fa-tags me-2 text-warning"></i>Жанры игр
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider m-1"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="{{ route('home') }}">
+                                            <i class="fas fa-external-link-alt me-2 text-secondary"></i>Перейти на сайт
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider m-1"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="{{ route('admin.logout') }}"
+                                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Выйти из системы
+                                        </a>
+                                    </li>
+                                </ul>
                             </div>
+                            <!-- ========== КОНЕЦ ВЫПАДАЮЩЕГО МЕНЮ ========== -->
                         </div>
                     </div>
                 </div>
@@ -361,11 +467,14 @@
                 });
             });
 
+            // Инициализация dropdown (ВАЖНО для нового выпадающего меню)
+            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+            var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl);
+            });
+
             // Инициализация алертов
             $('.alert').alert();
-
-            // Инициализация dropdown
-            $('.dropdown-toggle').dropdown();
 
             console.log('✅ Bootstrap компоненты инициализированы');
         }

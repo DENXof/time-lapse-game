@@ -6,6 +6,7 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GenreController;
+use App\Http\Controllers\Admin\ProfileController; // ← ДОБАВИТЬ ЭТУ СТРОЧКУ
 
 // ============================================
 // ПУБЛИЧНАЯ ЧАСТЬ (доступна всем)
@@ -63,5 +64,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('{game}', [GameController::class, 'update'])->name('update');
             Route::delete('{game}', [GameController::class, 'destroy'])->name('destroy');
         });
+
+        // =============== ДОБАВЛЯЕМ ЭТОТ БЛОК ===============
+        // Профиль администратора
+        Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+        // =============== КОНЕЦ БЛОКА ===============
     });
 });

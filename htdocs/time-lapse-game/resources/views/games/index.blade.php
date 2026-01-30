@@ -80,15 +80,7 @@
         <div class="alert alert-info text-center py-5">
             <i class="fas fa-gamepad fa-3x mb-3"></i>
             <h4>Игр пока нет</h4>
-            <p>Добавьте первую игру, нажав на кнопку "Добавить игру"</p>
 
-            @auth
-                @if(auth()->user()->is_admin)
-                    <a href="{{ route('admin.games.create') }}" class="btn btn-primary mt-2">
-                        <i class="fas fa-plus"></i> Добавить первую игру
-                    </a>
-                @endif
-            @endauth
         </div>
     @endif
 </div>

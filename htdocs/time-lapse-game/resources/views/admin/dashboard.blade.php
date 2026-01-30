@@ -8,7 +8,7 @@
 <div class="row">
     <!-- Статистика -->
     <div class="col-md-3 col-lg-3">
-        <div class="stat-card games">
+        <div class="stat-card games position-relative">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-0">{{ $stats['total_games'] }}</h2>
@@ -16,12 +16,12 @@
                 </div>
                 <i class="fas fa-gamepad stat-icon text-primary"></i>
             </div>
-            <a href="{{ route('games.index') }}" class="stretched-link"></a>
+            <!-- УДАЛЕНА растянутая ссылка -->
         </div>
     </div>
 
     <div class="col-md-3 col-lg-3">
-        <div class="stat-card genres">
+        <div class="stat-card genres position-relative">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-0">{{ $stats['total_genres'] }}</h2>
@@ -33,7 +33,7 @@
     </div>
 
     <div class="col-md-3 col-lg-3">
-        <div class="stat-card views">
+        <div class="stat-card views position-relative">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-0">{{ number_format($stats['total_views']) }}</h2>
@@ -45,7 +45,7 @@
     </div>
 
     <div class="col-md-3 col-lg-3">
-        <div class="stat-card recent">
+        <div class="stat-card recent position-relative">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-0">{{ $stats['recent_games']->count() }}</h2>
@@ -128,7 +128,7 @@
                                     </td>
                                     <td>{{ $game->release_year }}</td>
                                     <td>
-                                        <a href="{{ route('games.edit', $game->id) }}"
+                                        <a href="{{ route('admin.games.edit', $game->id) }}"
                                            class="btn btn-sm btn-outline-warning">
                                             <i class="fas fa-edit"></i>
                                         </a>
