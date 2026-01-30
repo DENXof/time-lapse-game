@@ -10,14 +10,26 @@ use Illuminate\Support\Facades\Storage;
 
 class GameController extends Controller
 {
+    // ============================================
+    // ПУБЛИЧНЫЕ МЕТОДЫ (доступны всем)
+    // ============================================
+
+    /**
+     * Публичный список игр (доступен всем)
+     */
     public function index()
     {
-        $games = Game::with('genre')->orderBy('release_year', 'desc')->paginate(12);
+        $games = Game::with('genre')
+                    ->orderBy('release_year', 'desc')
+                    ->paginate(12);
         $genres = Genre::all();
 
         return view('games.index', compact('games', 'genres'));
     }
 
+    /**
+     * Просмотр игры (доступен всем)
+     */
     public function show($slug)
     {
         $game = Game::where('slug', $slug)
@@ -37,12 +49,34 @@ class GameController extends Controller
         return view('games.show', compact('game', 'relatedGames'));
     }
 
+    // ============================================
+    // АДМИНСКИЕ МЕТОДЫ (только для админов)
+    // ============================================
+
+    /**
+     * Список игр в админке
+     */
+    public function adminIndex()
+    {
+        $games = Game::with('genre')
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(15);
+
+        return view('admin.games.index', compact('games'));
+    }
+
+    /**
+     * Форма создания игры в админке
+     */
     public function create()
     {
         $genres = Genre::all();
-        return view('games.create', compact('genres'));
+        return view('admin.games.create', compact('genres'));
     }
 
+    /**
+     * Сохранение новой игры из админки
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -65,18 +99,25 @@ class GameController extends Controller
 
         Game::create($validated);
 
-        return redirect()->route('games.index')
+        // Редирект в админку, а не на публичный сайт
+        return redirect()->route('admin.games.index')
             ->with('success', 'Игра успешно добавлена!');
     }
 
+    /**
+     * Форма редактирования игры в админке
+     */
     public function edit($id)
     {
         $game = Game::findOrFail($id);
         $genres = Genre::all();
 
-        return view('games.edit', compact('game', 'genres'));
+        return view('admin.games.edit', compact('game', 'genres'));
     }
 
+    /**
+     * Обновление игры из админки
+     */
     public function update(Request $request, $id)
     {
         $game = Game::findOrFail($id);
@@ -107,10 +148,14 @@ class GameController extends Controller
 
         $game->update($validated);
 
-        return redirect()->route('games.index')
+        // Редирект в админку
+        return redirect()->route('admin.games.index')
             ->with('success', 'Игра успешно обновлена!');
     }
 
+    /**
+     * Удаление игры из админки
+     */
     public function destroy($id)
     {
         $game = Game::findOrFail($id);
@@ -121,7 +166,8 @@ class GameController extends Controller
 
         $game->delete();
 
-        return redirect()->route('games.index')
+        // Редирект в админку
+        return redirect()->route('admin.games.index')
             ->with('success', 'Игра успешно удалена!');
     }
 }

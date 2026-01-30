@@ -199,14 +199,14 @@
                         <i class="fas fa-tachometer-alt"></i> Дашборд
                     </a>
 
-                    <a class="nav-link {{ Request::is('games*') && !Request::is('admin*') ? 'active' : '' }}"
-                       href="{{ route('games.index') }}">
-                        <i class="fas fa-gamepad"></i> Все игры
+                    <a class="nav-link {{ Request::is('admin/genres*') ? 'active' : '' }}"
+                       href="{{ route('admin.genres.index') }}">
+                        <i class="fas fa-tags"></i> Жанры игр
                     </a>
 
-                    <a class="nav-link {{ Request::is('games/create') ? 'active' : '' }}"
-                       href="{{ route('games.create') }}">
-                        <i class="fas fa-plus-circle"></i> Добавить игру
+                    <a class="nav-link {{ Request::is('admin/games*') ? 'active' : '' }}"
+                       href="{{ route('admin.games.index') }}">
+                        <i class="fas fa-gamepad"></i> Управление играми
                     </a>
 
                     <a class="nav-link {{ Request::is('timeline') ? 'active' : '' }}"

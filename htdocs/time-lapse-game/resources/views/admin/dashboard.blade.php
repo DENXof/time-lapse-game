@@ -69,7 +69,7 @@
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <a href="{{ route('games.create') }}" class="btn btn-primary w-100 py-3">
+                        <a href="{{ route('admin.games.create') }}" class="btn btn-primary w-100 py-3">
                             <i class="fas fa-plus-circle fa-2x mb-2 d-block"></i>
                             Добавить игру
                         </a>

@@ -6,9 +6,15 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Все игры</h1>
-        <a href="{{ route('games.create') }}" class="btn btn-success">
-            <i class="fas fa-plus"></i> Добавить игру
-        </a>
+
+        {{-- Кнопка добавления только для админов --}}
+        @auth
+            @if(auth()->user()->is_admin)
+                <a href="{{ route('admin.games.create') }}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Добавить игру
+                </a>
+            @endif
+        @endauth
     </div>
 
     @if($games->count() > 0)
@@ -39,19 +45,25 @@
                             <a href="{{ route('games.show', $game->slug) }}" class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-eye"></i> Подробнее
                             </a>
-                            <div>
-                                <a href="{{ route('games.edit', $game->id) }}" class="btn btn-sm btn-outline-warning">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ route('games.destroy', $game->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Удалить эту игру?')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
+
+                            {{-- Кнопки администрирования только для админов --}}
+                            @auth
+                                @if(auth()->user()->is_admin)
+                                    <div>
+                                        <a href="{{ route('admin.games.edit', $game->id) }}" class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ route('admin.games.destroy', $game->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Удалить эту игру?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endif
+                            @endauth
                         </div>
                     </div>
                 </div>
@@ -69,9 +81,14 @@
             <i class="fas fa-gamepad fa-3x mb-3"></i>
             <h4>Игр пока нет</h4>
             <p>Добавьте первую игру, нажав на кнопку "Добавить игру"</p>
-            <a href="{{ route('games.create') }}" class="btn btn-primary mt-2">
-                <i class="fas fa-plus"></i> Добавить первую игру
-            </a>
+
+            @auth
+                @if(auth()->user()->is_admin)
+                    <a href="{{ route('admin.games.create') }}" class="btn btn-primary mt-2">
+                        <i class="fas fa-plus"></i> Добавить первую игру
+                    </a>
+                @endif
+            @endauth
         </div>
     @endif
 </div>

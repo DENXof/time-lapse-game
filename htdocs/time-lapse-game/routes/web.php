@@ -5,6 +5,11 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GenreController;
+
+// ============================================
+// ПУБЛИЧНАЯ ЧАСТЬ (доступна всем)
+// ============================================
 
 // Главная страница
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -12,11 +17,11 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Таймлайн
 Route::get('/timeline', [HomeController::class, 'timeline'])->name('timeline');
 
-// Игры (CRUD) - все методы кроме show
-Route::resource('games', GameController::class)->except(['show']);
+// Просмотр списка игр (доступно всем)
+Route::get('games', [GameController::class, 'index'])->name('games.index');
 
-// Отдельный маршрут для show с использованием slug
-Route::get('games/{game:slug}', [GameController::class, 'show'])->name('games.show');
+// Просмотр одной игры по slug (доступно всем) - используем явное указание {slug} для ясности
+Route::get('games/{slug}', [GameController::class, 'show'])->name('games.show');
 
 // Простая тестовая страница
 Route::get('/test', function () {
@@ -45,6 +50,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware(['admin'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        // Здесь позже добавим управление играми, жанрами и т.д.
+        // Управление жанрами (только в админке)
+        Route::resource('genres', GenreController::class);
+
+        // Управление играми (только в админке)
+        Route::prefix('games')->name('games.')->group(function () {
+            Route::get('/', [GameController::class, 'adminIndex'])->name('index');
+            Route::get('create', [GameController::class, 'create'])->name('create');
+            Route::post('/', [GameController::class, 'store'])->name('store');
+            // Используем {id} для админских маршрутов и {game} для implicit binding
+            Route::get('{game}/edit', [GameController::class, 'edit'])->name('edit');
+            Route::put('{game}', [GameController::class, 'update'])->name('update');
+            Route::delete('{game}', [GameController::class, 'destroy'])->name('destroy');
+        });
     });
 });
