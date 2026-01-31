@@ -19,7 +19,7 @@ class Game extends Model
         'description',
         'short_description',
         'cover_image',
-        'platforms',
+        'platform',
         'genre_id'
     ];
 

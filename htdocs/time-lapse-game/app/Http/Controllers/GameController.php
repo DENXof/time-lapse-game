@@ -20,8 +20,8 @@ class GameController extends Controller
     public function index()
     {
         $games = Game::with('genre')
-                    ->orderBy('release_year', 'desc')
-                    ->paginate(12);
+            ->orderBy('release_year', 'desc')
+            ->paginate(12);
         $genres = Genre::all();
 
         return view('games.index', compact('games', 'genres'));
@@ -59,8 +59,8 @@ class GameController extends Controller
     public function adminIndex()
     {
         $games = Game::with('genre')
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(15);
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
         return view('admin.games.index', compact('games'));
     }
