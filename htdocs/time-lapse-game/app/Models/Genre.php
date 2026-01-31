@@ -15,7 +15,6 @@ class Genre extends Model
         'name',
         'slug',
         'description',
-        'color',
         'icon',
         'sort_order',
         'is_active'

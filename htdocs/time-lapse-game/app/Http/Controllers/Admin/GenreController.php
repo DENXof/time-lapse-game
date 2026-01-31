@@ -29,7 +29,6 @@ class GenreController extends Controller
         $request->validate([
             'name' => 'required|string|max:100|unique:genres',
             'description' => 'nullable|string|max:500',
-            'color' => 'required|string|size:7|starts_with:#',
             'icon' => 'required|string',
         ]);
 
@@ -37,7 +36,6 @@ class GenreController extends Controller
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'description' => $request->description,
-            'color' => $request->color,
             'icon' => $request->icon,
             'sort_order' => $request->sort_order ?? 0,
             'is_active' => $request->has('is_active'),
@@ -59,7 +57,6 @@ class GenreController extends Controller
         $request->validate([
             'name' => 'required|string|max:100|unique:genres,name,' . $genre->id,
             'description' => 'nullable|string|max:500',
-            'color' => 'required|string|size:7|starts_with:#',
             'icon' => 'required|string',
         ]);
 
@@ -67,7 +64,6 @@ class GenreController extends Controller
             'name' => $request->name,
             'slug' => Str::slug($request->name),
             'description' => $request->description,
-            'color' => $request->color,
             'icon' => $request->icon,
             'sort_order' => $request->sort_order ?? 0,
             'is_active' => $request->has('is_active'),

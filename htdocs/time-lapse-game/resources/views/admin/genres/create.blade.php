@@ -48,22 +48,6 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="color" class="form-label">Цвет жанра *</label>
-                                <input type="color"
-                                       class="form-control form-control-color @error('color') is-invalid @enderror"
-                                       id="color"
-                                       name="color"
-                                       value="{{ old('color', '#6c757d') }}"
-                                       required>
-                                @error('color')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <small class="text-muted">Выберите цвет для визуального выделения</small>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="mb-3">
                                 <label for="icon" class="form-label">Иконка *</label>
                                 <input type="text"
                                        class="form-control @error('icon') is-invalid @enderror"

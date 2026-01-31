@@ -54,20 +54,6 @@
                                 <h5>Платформа</h5>
                                 <p class="fs-5">{{ $game->platform }}</p>
                             </div>
-
-                            <div class="d-flex gap-2">
-                                <a href="{{ route('games.edit', $game->id) }}" class="btn btn-warning">
-                                    <i class="fas fa-edit"></i> Редактировать
-                                </a>
-                                <form action="{{ route('games.destroy', $game->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger"
-                                            onclick="return confirm('Удалить эту игру?')">
-                                        <i class="fas fa-trash"></i> Удалить
-                                    </button>
-                                </form>
-                            </div>
                         </div>
                     </div>
                 </div>

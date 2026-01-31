@@ -34,7 +34,6 @@
                             <th width="50">Иконка</th>
                             <th>Название</th>
                             <th>Описание</th>
-                            <th>Цвет</th>
                             <th>Порядок</th>
                             <th>Статус</th>
                             <th width="150">Действия</th>
@@ -58,11 +57,7 @@
                                         <span class="text-muted">—</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <span class="badge" style="background: {{ $genre->color }}; color: white;">
-                                        {{ $genre->color }}
-                                    </span>
-                                </td>
+
                                 <td>
                                     <span class="badge bg-light text-dark">{{ $genre->sort_order }}</span>
                                 </td>

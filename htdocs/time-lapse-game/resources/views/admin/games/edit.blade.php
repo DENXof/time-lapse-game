@@ -13,7 +13,7 @@
             </div>
 
             <div class="card-body">
-                    <form action="{{ route('games.update', $game->id) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('admin.games.update', $game->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 

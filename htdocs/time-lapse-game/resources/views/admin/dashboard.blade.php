@@ -16,7 +16,6 @@
                 </div>
                 <i class="fas fa-gamepad stat-icon text-primary"></i>
             </div>
-            <!-- УДАЛЕНА растянутая ссылка -->
         </div>
     </div>
 
