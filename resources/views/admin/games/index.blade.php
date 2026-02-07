@@ -6,12 +6,49 @@
 @section('content')
 <div class="card border-0 shadow">
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-            <i class="fas fa-gamepad me-2"></i>Все игры
-        </h5>
+        <div>
+            <h5 class="mb-0">
+                <i class="fas fa-gamepad me-2"></i>Все игры
+            </h5>
+            <small class="text-muted">
+                Найдено: {{ $games->total() }} игр
+                @if(request('search'))
+                    по запросу "{{ request('search') }}"
+                @endif
+            </small>
+        </div>
         <a href="{{ route('admin.games.create') }}" class="btn btn-primary">
             <i class="fas fa-plus me-1"></i>Добавить игру
         </a>
+    </div>
+
+    <!-- Форма поиска -->
+    <div class="card-body border-bottom">
+        <form action="{{ route('admin.games.index') }}" method="GET" class="row g-3">
+            <div class="col-md-10">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text"
+                           class="form-control"
+                           name="search"
+                           placeholder="Поиск по названию игры..."
+                           value="{{ request('search') }}"
+                           autocomplete="off">
+                    @if(request('search'))
+                        <a href="{{ route('admin.games.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Сбросить
+                        </a>
+                    @endif
+                </div>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i> Найти
+                </button>
+            </div>
+        </form>
     </div>
 
     <div class="card-body">
@@ -19,7 +56,13 @@
             <div class="text-center py-5">
                 <i class="fas fa-gamepad fa-3x text-muted mb-3"></i>
                 <h5>Игры не найдены</h5>
-                <p class="text-muted">Добавьте первую игру в каталог</p>
+                <p class="text-muted">
+                    @if(request('search'))
+                        По запросу "{{ request('search') }}" ничего не найдено
+                    @else
+                        Игр пока нет
+                    @endif
+                </p>
                 <a href="{{ route('admin.games.create') }}" class="btn btn-primary">
                     <i class="fas fa-plus me-1"></i>Добавить игру
                 </a>
@@ -90,8 +133,63 @@
                 </table>
             </div>
 
-            {{ $games->links() }}
+            {{ $games->appends(request()->query())->links() }}
         @endif
     </div>
 </div>
+
+<!-- JavaScript для улучшения поиска -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="search"]');
+    const searchForm = document.querySelector('form');
+
+    // Автофокус на поле поиска
+    if (searchInput && !searchInput.value) {
+        searchInput.focus();
+    }
+
+    // Отправка формы при нажатии Enter (без перезагрузки)
+    searchInput?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            this.form.submit();
+        }
+    });
+
+    // Очистка поиска при клике на кнопку сброса
+    document.querySelector('.btn-outline-secondary')?.addEventListener('click', function(e) {
+        searchInput.value = '';
+        // Не переходим по ссылке, а очищаем поле
+        e.preventDefault();
+        searchForm.submit();
+    });
+});
+</script>
+
+<style>
+/* Стили для формы поиска */
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.form-control:focus + .input-group-text {
+    border-color: #3498db;
+    border-left: none;
+}
+
+/* Подсветка найденного текста */
+.highlight {
+    background-color: #fff3cd;
+    font-weight: bold;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+</style>
 @endsection

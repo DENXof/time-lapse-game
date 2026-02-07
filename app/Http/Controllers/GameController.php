@@ -54,13 +54,30 @@ class GameController extends Controller
     // ============================================
 
     /**
-     * Список игр в админке
+     * Список игр в админке с поиском
      */
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
-        $games = Game::with('genre')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $query = Game::with('genre');
+
+        // Поиск ТОЛЬКО по названию игры
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where('title', 'LIKE', "%{$search}%");
+        }
+
+        // Фильтр по году
+        if ($request->has('year') && $request->year != '') {
+            $query->where('release_year', $request->year);
+        }
+
+        $games = $query->orderBy('created_at', 'desc')
+                       ->paginate(15);
+
+        // Сохраняем параметры поиска в пагинации
+        if ($request->has('search') || $request->has('year')) {
+            $games->appends($request->all());
+        }
 
         return view('admin.games.index', compact('games'));
     }

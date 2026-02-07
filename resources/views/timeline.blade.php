@@ -166,7 +166,6 @@
                 </h4>
                 <p class="card-text text-muted mb-4">
                     В нашей базе данных собраны игры из разных исторических периодов.
-                    Вы можете фильтровать их по году выпуска и жанру.
                 </p>
                 <a href="{{ route('games.index') }}" class="btn btn-primary btn-lg px-4">
                     <i class="fas fa-gamepad me-2"></i>Перейти ко всем играм
