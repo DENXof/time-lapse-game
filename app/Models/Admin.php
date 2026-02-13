@@ -3,19 +3,27 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
-// или use Illuminate\Database\Eloquent\Model;
-// с use Illuminate\Auth\Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 class Admin extends Authenticatable
 {
-    // Если вы используете трейт отдельно:
-    // use \Illuminate\Auth\Authenticatable;
+    use Notifiable;
+
+    protected $table = 'admins'; // Явно указываем таблицу
 
     protected $fillable = [
-        'name', 'email', 'password'
+        'name',
+        'email',
+        'password',
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
 }

@@ -16,6 +16,7 @@ class Era extends Model
         'end_year',
         'description',
         'characteristics',
+        'transition',
         'color_primary',
         'color_secondary',
         'font_family',
