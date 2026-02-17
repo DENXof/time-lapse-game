@@ -11,6 +11,9 @@
     <!-- Font Awesome для иконок -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v={{ time() }}">
+
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -109,11 +112,6 @@
                     <li class="nav-item">
                         <a class="nav-link {{ Request::is('timeline') ? 'active' : '' }}" href="{{ route('timeline') }}">
                             <i class="fas fa-timeline me-1"></i> Таймлайн
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/test">
-                            <i class="fas fa-api me-1"></i> API
                         </a>
                     </li>
                 </ul>
