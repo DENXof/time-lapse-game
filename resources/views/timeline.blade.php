@@ -1,41 +1,78 @@
+{{--СТРАНИЦА ТАЙМЛАЙНА (ХРОНОЛОГИЯ ЭПОХ)--}}
 @extends('layouts.app')
 
+{{-- Устанавливаем заголовок страницы --}}
 @section('title', 'Хронология эпох PC-игр - TimeLapse Games')
 
+{{-- Начинаем секцию контента --}}
 @section('content')
+
 <div class="container py-5">
-    <!-- Заголовок -->
+
+    {{--
+        ========================================
+        ЗАГОЛОВОК СТРАНИЦЫ
+        ========================================
+    --}}
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold mb-3 text-primary">🎮 Хронология эпох PC-игр</h1>
         <p class="lead text-muted">От мейнфреймов до облачного гейминга — путешествие по истории компьютерных игр</p>
     </div>
 
-    <!-- Вертикальная шкала времени -->
+    {{--
+        ========================================
+        ВЕРТИКАЛЬНАЯ ШКАЛА ВРЕМЕНИ
+        ========================================
+        Здесь будут все эпохи одна под другой
+    --}}
     <div class="timeline-wrapper">
+
+        {{--
+            forelse - перебираем эпохи, если их нет - показываем empty
+            Данные приходят из контроллера: $eras = Era::with('games')->get()
+        --}}
         @forelse($eras as $era)
+
+        {{-- КАЖДАЯ ЭПОХА --}}
         <div class="timeline-item position-relative mb-5">
-            <!-- Точка на линии времени (цвет из БД) -->
+
+            {{--
+                ТОЧКА НА ЛИНИИ ВРЕМЕНИ
+                Цвет берется из базы данных (color_primary)
+            --}}
             <div class="timeline-dot shadow" style="background-color: {{ $era->color_primary }};"></div>
 
-            <!-- Карточка эпохи -->
+            {{--
+                ========================================
+                КАРТОЧКА ЭПОХИ
+                ========================================
+            --}}
             <div class="card shadow-lg border-0 timeline-card">
-                <!-- Заголовок карточки с градиентом из БД -->
+
+                {{--
+                    ЗАГОЛОВОК КАРТОЧКИ С ГРАДИЕНТОМ
+                    Цвета из базы: color_primary и color_secondary
+                --}}
                 <div class="card-header text-white d-flex align-items-center py-3"
                      style="background: linear-gradient(135deg, {{ $era->color_primary }}, {{ $era->color_secondary }});">
+
+                    {{-- ИКОНКА (меняется в зависимости от года) --}}
                     <div class="era-icon me-3">
                         @php
-                            // Определяем иконку по году или названию
+                            // Определяем иконку по году начала эпохи
                             $icon = match(true) {
-                                $era->start_year < 1970 => 'fa-microchip',
-                                $era->start_year < 1985 => 'fa-desktop',
-                                $era->start_year < 1995 => 'fa-chess',
-                                $era->start_year < 2005 => 'fa-cube',
-                                $era->start_year < 2015 => 'fa-download',
-                                default => 'fa-cloud'
+                                $era->start_year < 1970 => 'fa-microchip',      // Микросхема (1950-1970)
+                                $era->start_year < 1985 => 'fa-desktop',        // Компьютер (1970-1985)
+                                $era->start_year < 1995 => 'fa-chess',          // Шахматы (стратегии) (1985-1995)
+                                $era->start_year < 2005 => 'fa-cube',           // 3D-куб (1995-2005)
+                                $era->start_year < 2015 => 'fa-download',       // Загрузка (цифровая дистрибуция)
+                                default => 'fa-cloud'                           // Облако (облачный гейминг)
                             };
                         @endphp
                         <i class="fas {{ $icon }} fa-2x"></i>
                     </div>
+
+                    {{-- НАЗВАНИЕ И ГОДЫ --}}
                     <div>
                         <h3 class="mb-1">{{ $era->name }}</h3>
                         <p class="mb-0 opacity-90">
@@ -44,19 +81,26 @@
                     </div>
                 </div>
 
-                <!-- Тело карточки -->
+                {{--
+                    ========================================
+                    ТЕЛО КАРТОЧКИ (ДВЕ КОЛОНКИ)
+                    ========================================
+                --}}
                 <div class="card-body">
                     <div class="row">
-                        <!-- Левая колонка: Описание и игры -->
+
+                        {{-- ЛЕВАЯ КОЛОНКА: Описание и игры --}}
                         <div class="col-lg-8">
+                            {{-- Описание эпохи --}}
                             <p class="fs-5 mb-4">{{ $era->description }}</p>
 
-                            <!-- Ключевые игры (если есть связь) -->
+                            {{-- КЛЮЧЕВЫЕ ИГРЫ (если есть) --}}
                             @if($era->games->count() > 0)
                             <div class="mb-4">
                                 <h5 class="text-primary mb-3">
                                     <i class="fas fa-gamepad me-2"></i>Ключевые игры эпохи
                                 </h5>
+                                {{-- Игры в виде бейджей (только первые 5) --}}
                                 <div class="d-flex flex-wrap gap-2">
                                     @foreach($era->games->take(5) as $game)
                                     <a href="{{ route('games.show', $game->slug) }}" class="text-decoration-none">
@@ -70,9 +114,10 @@
                             @endif
                         </div>
 
-                        <!-- Правая колонка: Платформы и информация -->
+                        {{-- ПРАВАЯ КОЛОНКА: Технологии и переход --}}
                         <div class="col-lg-4">
-                            <!-- Характеристики (технологии) -->
+
+                            {{-- Технологические особенности --}}
                             <div class="card bg-light mb-3">
                                 <div class="card-body">
                                     <h6 class="card-title text-muted mb-3">
@@ -82,7 +127,7 @@
                                 </div>
                             </div>
 
-                            <!-- Завершение эпохи (переход) -->
+                            {{-- Завершение эпохи (переход к следующей) --}}
                             @if($era->transition)
                             <div class="p-3 bg-light border-start border-4 rounded"
                                  style="border-color: {{ $era->color_primary }} !important;">
@@ -96,69 +141,76 @@
                     </div>
                 </div>
 
-                <!-- Футер карточки -->
+                {{--
+                    ========================================
+                    ПОДВАЛ КАРТОЧКИ (с кнопкой "Детали")
+                    ========================================
+                --}}
                 <div class="card-footer bg-transparent border-top">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="badge fs-6 p-2 px-3 text-white"
-                              style="background-color: {{ $era->color_primary }};">
-                            <i class="fas fa-history me-1"></i>Эпоха #{{ $loop->iteration }}
-                        </span>
-                        <button class="btn btn-sm btn-outline-primary era-toggle-btn"
-                                type="button"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#eraDetails{{ $era->id }}"
-                                aria-expanded="false"
-                                aria-controls="eraDetails{{ $era->id }}">
-                            <span class="collapsed">
-                                <i class="fas fa-info-circle me-1"></i> Детали эпохи
-                            </span>
-                            <span class="expanded">
-                                <i class="fas fa-times-circle me-1"></i> Скрыть детали
-                            </span>
-                        </button>
-                    </div>
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="badge fs-6 p-2 px-3 text-white"
+              style="background-color: {{ $era->color_primary }};">
+            <i class="fas fa-history me-1"></i>Эпоха #{{ $loop->iteration }}
+        </span>
 
-                    <!-- Дополнительная информация (скрытая) -->
-                    <div class="collapse mt-3" id="eraDetails{{ $era->id }}">
-                        <div class="card card-body bg-light">
-                            <h6 class="mb-3" style="color: {{ $era->color_primary }};">
-                                <i class="fas fa-clipboard-list me-1"></i>Характеристики эпохи
-                            </h6>
-                            <ul class="mb-0">
-                                <li class="mb-2">
-                                    <strong>Период:</strong> {{ $era->start_year }} — {{ $era->end_year }} ({{ $era->duration }} лет)
-                                </li>
-                                <li class="mb-2">
-                                    <strong>Технологический фокус:</strong> {{ $era->description }}
-                                </li>
-                                <li class="mb-2">
-                                    <strong>Ключевые технологии:</strong> {{ $era->characteristics }}
-                                </li>
-                                @if($era->transition)
-                                <li>
-                                    <strong>Переход к следующей эпохе:</strong> {{ $era->transition }}
-                                </li>
-                                @endif
-                            </ul>
+        <!-- КНОПКА ТЕПЕРЬ ВНЕ КОЛЛАПСА -->
+        <button class="btn btn-sm btn-outline-primary era-toggle-btn collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#eraDetails{{ $era->id }}"
+                aria-expanded="false"
+                aria-controls="eraDetails{{ $era->id }}">
+            <i class="fas fa-info-circle me-1"></i> Детали эпохи
+        </button>
+    </div>
+</div>
 
-                            @if($era->games->count() > 0)
-                            <hr>
-                            <h6 class="mb-2" style="color: {{ $era->color_primary }};">
-                                <i class="fas fa-gamepad me-1"></i>Все игры эпохи ({{ $era->games->count() }})
-                            </h6>
-                            <div class="d-flex flex-wrap gap-2">
-                                @foreach($era->games as $game)
-                                <a href="{{ route('games.show', $game->slug) }}" class="badge bg-secondary text-decoration-none">
-                                    {{ $game->title }}
-                                </a>
-                                @endforeach
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
+<!-- КОЛЛАПС ТЕПЕРЬ ПОСЛЕ .card-footer -->
+<div class="collapse" id="eraDetails{{ $era->id }}">
+    <div class="card border-0 bg-light mt-0 rounded-0 rounded-bottom">
+        <div class="card-body">
+            <h6 class="mb-3" style="color: {{ $era->color_primary }};">
+                <i class="fas fa-clipboard-list me-1"></i>Характеристики эпохи
+            </h6>
+            <ul class="mb-0">
+                <li class="mb-2">
+                    <strong>Период:</strong> {{ $era->start_year }} — {{ $era->end_year }} ({{ $era->duration }} лет)
+                </li>
+                <li class="mb-2">
+                    <strong>Технологический фокус:</strong> {{ $era->description }}
+                </li>
+                <li class="mb-2">
+                    <strong>Ключевые технологии:</strong> {{ $era->characteristics }}
+                </li>
+                @if($era->transition)
+                <li>
+                    <strong>Переход к следующей эпохе:</strong> {{ $era->transition }}
+                </li>
+                @endif
+            </ul>
+
+            @if($era->games->count() > 0)
+            <hr>
+            <h6 class="mb-2" style="color: {{ $era->color_primary }};">
+                <i class="fas fa-gamepad me-1"></i>Все игры эпохи ({{ $era->games->count() }})
+            </h6>
+            <div class="d-flex flex-wrap gap-2">
+                @foreach($era->games as $game)
+                <a href="{{ route('games.show', $game->slug) }}" class="badge bg-secondary text-decoration-none">
+                    {{ $game->title }}
+                </a>
+                @endforeach
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
             </div>
         </div>
+
+        {{--
+            ЕСЛИ ЭПОХ НЕТ - показываем это сообщение
+        --}}
         @empty
         <div class="alert alert-info text-center py-5">
             <i class="fas fa-history fa-3x mb-3"></i>
@@ -168,35 +220,11 @@
         @endforelse
     </div>
 
-    <!-- Легенда эпох -->
-    @if($eras->count() > 0)
-    <div class="card shadow-sm border-0 mt-5">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">
-                <i class="fas fa-key me-2"></i>Легенда эпох
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                @foreach($eras as $era)
-                <div class="col-md-6 col-lg-4">
-                    <div class="d-flex align-items-center p-3 border rounded">
-                        <span class="p-3 me-3 rounded" style="background-color: {{ $era->color_primary }};"></span>
-                        <div>
-                            <strong class="d-block">{{ $era->name }}</strong>
-                            <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>{{ $era->start_year }} — {{ $era->end_year }}
-                            </small>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
-            </div>
-        </div>
-    </div>
-    @endif
-
-    <!-- Связь с играми -->
+    {{--
+        ========================================
+        ПРИЗЫВ К ДЕЙСТВИЮ (ссылки на игры)
+        ========================================
+    --}}
     <div class="text-center mt-5">
         <div class="card border-primary shadow">
             <div class="card-body py-4">
@@ -217,12 +245,19 @@
     </div>
 </div>
 
+{{--
+    ========================================
+    СТИЛИ ДЛЯ ТАЙМЛАЙНА
+    ========================================
+--}}
 <style>
+    /* Контейнер для всей шкалы времени */
     .timeline-wrapper {
         position: relative;
-        padding-left: 60px;
+        padding-left: 60px;  /* Отступ слева для линии */
     }
 
+    /* Вертикальная линия (градиент из цветов эпох) */
     .timeline-wrapper::before {
         content: '';
         position: absolute;
@@ -236,6 +271,7 @@
         border-radius: 3px;
     }
 
+    /* Точка на линии для каждой эпохи */
     .timeline-dot {
         position: absolute;
         left: 17px;
@@ -249,46 +285,39 @@
         transition: transform 0.3s;
     }
 
+    /* Увеличиваем точку при наведении */
     .timeline-item:hover .timeline-dot {
         transform: scale(1.2);
     }
 
+    /* Карточка эпохи */
     .timeline-card {
-        margin-left: 40px;
+        margin-left: 40px;  /* Отступ от линии */
         transition: all 0.3s ease;
         border-radius: 15px;
         overflow: hidden;
     }
 
+    /* Сдвигаем карточку при наведении */
     .timeline-card:hover {
         transform: translateX(10px);
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
     }
 
+    /* Иконка в заголовке */
     .era-icon {
         background: rgba(255, 255, 255, 0.2);
         padding: 10px;
         border-radius: 10px;
     }
 
-    /* Стили для переключения текста кнопки */
-    .era-toggle-btn[aria-expanded="false"] .expanded {
-        display: none;
-    }
+    /* Скрываем/показываем текст кнопки в зависимости от состояния */
+    .era-toggle-btn[aria-expanded="false"] .expanded { display: none; }
+    .era-toggle-btn[aria-expanded="true"] .collapsed { display: none; }
+    .era-toggle-btn[aria-expanded="true"] .expanded { display: inline; }
+    .era-toggle-btn[aria-expanded="false"] .collapsed { display: inline; }
 
-    .era-toggle-btn[aria-expanded="true"] .collapsed {
-        display: none;
-    }
-
-    .era-toggle-btn[aria-expanded="true"] .expanded {
-        display: inline;
-    }
-
-    .era-toggle-btn[aria-expanded="false"] .collapsed {
-        display: inline;
-    }
-
-    /* Анимация появления карточек */
+    /* Анимация появления карточек при скролле */
     .timeline-item {
         opacity: 0;
         transform: translateX(-30px);
@@ -300,44 +329,40 @@
         transform: translateX(0);
     }
 
+    /* Адаптация для мобильных */
     @media (max-width: 768px) {
-        .timeline-wrapper {
-            padding-left: 40px;
-        }
-
-        .timeline-wrapper::before {
-            left: 15px;
-        }
-
-        .timeline-dot {
-            left: 7px;
-            width: 22px;
-            height: 22px;
-            border-width: 3px;
-        }
-
-        .timeline-card {
-            margin-left: 25px;
-        }
+        .timeline-wrapper { padding-left: 40px; }
+        .timeline-wrapper::before { left: 15px; }
+        .timeline-dot { left: 7px; width: 22px; height: 22px; border-width: 3px; }
+        .timeline-card { margin-left: 25px; }
     }
 </style>
 
+{{--
+    ========================================
+    СКРИПТ ДЛЯ АНИМАЦИИ ПРИ СКРОЛЛЕ
+    ========================================
+--}}
 <script>
-    // Только анимация появления карточек при скролле
+    // Ждем загрузки страницы
     document.addEventListener('DOMContentLoaded', function() {
+        // Находим все элементы таймлайна
         const timelineItems = document.querySelectorAll('.timeline-item');
 
+        // Создаем наблюдатель за появлением элементов
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
+                // Если элемент появился в зоне видимости
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('animated');
+                    entry.target.classList.add('animated');  // Добавляем класс анимации
                 }
             });
         }, {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
+            threshold: 0.1,  // Срабатывает, когда 10% элемента видно
+            rootMargin: '0px 0px -50px 0px'  // Немного смещаем зону видимости
         });
 
+        // Наблюдаем за каждым элементом
         timelineItems.forEach(item => {
             observer.observe(item);
         });

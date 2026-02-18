@@ -1,5 +1,5 @@
 <?php
-
+//Контроллер управления профилем админа
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -70,29 +70,30 @@ class ProfileController extends Controller
      */
     public function updatePassword(Request $request)
     {
-        $admin = $this->getCurrentAdmin(); // Изменил на $admin
+        $admin = $this->getCurrentAdmin();
 
         if (!$admin) {
             abort(403, 'Доступ запрещен');
         }
-
+        //Валидация с проверкой текущего пароля
         $validator = Validator::make($request->all(), [
+            //Проверка текущего пароля
             'current_password' => [
-                'required',
+                'required', //Обязательное поле
                 function ($attribute, $value, $fail) use ($admin) {
-                    if (!Hash::check($value, $admin->password)) {
+                    if (!Hash::check($value, $admin->password)) {   // Hash::check() - проверяет, совпадает ли введенный пароль с хешем в БД
                         $fail('Текущий пароль введен неверно.');
                     }
                 }
             ],
-            'password' => 'required|string|min:8|confirmed|different:current_password',
+            'password' => 'required|string|min:8|confirmed|different:current_password', // Правила для нового пароля
         ], [
-            'password.different' => 'Новый пароль должен отличаться от текущего.',
+            'password.different' => 'Новый пароль должен отличаться от текущего.',  // Кастомные сообщения об ошибках
         ]);
 
         if ($validator->fails()) {
             return redirect()->route('admin.profile.edit')
-                ->withErrors($validator, 'password');
+                ->withErrors($validator, 'password'); // Ошибки в отдельном пакете 'password'
         }
 
         $admin->update([

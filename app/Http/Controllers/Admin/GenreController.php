@@ -1,5 +1,5 @@
 <?php
-// app/Http/Controllers/Admin/GenreController.php
+//Контроллер управления жанрами
 
 namespace App\Http\Controllers\Admin;
 
@@ -13,7 +13,7 @@ class GenreController extends Controller
     // Список всех жанров
     public function index()
     {
-        $genres = Genre::orderBy('sort_order')->orderBy('name')->paginate(10);
+        $genres = Genre::orderBy('sort_order')->orderBy('name')->paginate(10); //Сортировка по порядку(меньше=выше)(sort_order) и после по алфавиту(name)
         return view('admin.genres.index', compact('genres'));
     }
 
@@ -26,6 +26,7 @@ class GenreController extends Controller
     // Сохранение нового жанра
     public function store(Request $request)
     {
+        //параметры строк для заполнения в БД
         $request->validate([
             'name' => 'required|string|max:100|unique:genres',
             'description' => 'nullable|string|max:500',
@@ -33,12 +34,12 @@ class GenreController extends Controller
         ]);
 
         $genre = Genre::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description,
-            'icon' => $request->icon,
-            'sort_order' => $request->sort_order ?? 0,
-            'is_active' => $request->has('is_active'),
+            'name' => $request->name,   //название
+            'slug' => Str::slug($request->name),    //отдельная страница игры
+            'description' => $request->description, //описание игры
+            'icon' => $request->icon,   //иконка игры
+            'sort_order' => $request->sort_order ?? 0,  //порядок
+            'is_active' => $request->has('is_active'),  //активен или нет
         ]);
 
         return redirect()->route('admin.genres.index')

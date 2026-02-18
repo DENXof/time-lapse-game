@@ -12,10 +12,10 @@ class HomeController extends Controller
     public function index()
     {
         return view('home.index', [
-            'featuredGames' => Game::with('genre')->latest()->take(3)->get(),
-            'popularGenres' => Genre::withCount('games')->orderBy('games_count', 'desc')->take(3)->get(),
-            'eras' => Era::all(),
-            'stats' => [
+            'featuredGames' => Game::with('genre')->latest()->take(3)->get(),   //рекомендуемые игры
+            'popularGenres' => Genre::withCount('games')->orderBy('games_count', 'desc')->take(3)->get(),   //популярные жанры
+            'eras' => Era::all(),   //все жанры
+            'stats' => [    //статистика
                 'total_games' => Game::count(),
                 'total_genres' => Genre::count(),
                 'total_eras' => Era::count(),
@@ -26,11 +26,15 @@ class HomeController extends Controller
 
     public function timeline()
     {
-        // Получаем эпохи из базы данных с привязанными играми
-        $eras = Era::with('games')->orderBy('start_year', 'asc')->get();
+        $eras = Era::orderBy('start_year', 'asc')->get();
 
-        // Преобразуем данные в формат, ожидаемый представлением (если нужно)
-        // Но лучше обновить представление для работы с объектами Eloquent
+        // Для каждой эпохи вручную получаем игры по годам
+        foreach ($eras as $era) {
+            $era->games = Game::whereBetween('release_year', [$era->start_year, $era->end_year])
+                ->orderBy('release_year')
+                ->get();
+        }
+
         return view('timeline', compact('eras'));
     }
 }
