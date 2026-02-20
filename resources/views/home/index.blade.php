@@ -2,7 +2,7 @@
 @extends('layouts.app')
 
 {{-- Устанавливаем заголовок страницы --}}
-@section('title', 'Главная - TimeLapse Games')
+@section('title', 'Главная - История компьтерных игр')
 
 {{-- Начинаем секцию контента --}}
 @section('content')
@@ -14,7 +14,7 @@
 <div class="hero">
     <div class="container text-center">
         {{-- Главный заголовок сайта --}}
-        <h1 class="display-4 fw-bold">TimeLapse Games</h1>
+        <h1 class="display-4 fw-bold">История компьютерных игр</h1>
 
         {{-- Подзаголовок --}}
         <p class="lead">История игровой индустрии в одном месте</p>

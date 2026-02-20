@@ -1,109 +1,71 @@
 <?php
-//ФАЙЛ МАРШРУТОВ (web.php)
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\HomeController;           // Главная страница
-use App\Http\Controllers\GameController;           // Игры
-use App\Http\Controllers\Admin\AuthController;     // Вход для админов
-use App\Http\Controllers\Admin\DashboardController; // Админка (главная)
-use App\Http\Controllers\Admin\GenreController;    // Управление жанрами
-use App\Http\Controllers\Admin\ProfileController;  // Профиль админа
-
+// Импорт фасада Route для определения маршрутов
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\GameController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GenreController;
+use App\Http\Controllers\Admin\ProfileController;
 // ============================================
-// 1. ПУБЛИЧНАЯ ЧАСТЬ
+// ПУБЛИЧНЫЕ МАРШРУТЫ (доступны без аутентификации)
 // ============================================
-
-// Главная страница сайта
 Route::get('/', [HomeController::class, 'index'])->name('home');
-
-// Страница с историей игр
+// Определяет GET-маршрут для корневого URL
+// При обращении к '/' вызывается метод index контроллера HomeController
+// Маршруту присваивается имя 'home' для генерации ссылок
 Route::get('/timeline', [HomeController::class, 'timeline'])->name('timeline');
-
-// Список всех игр
+// Определяет GET-маршрут для '/timeline'
+// Вызывает метод timeline контроллера HomeController
+// Отображает хронологию игровых эпох
 Route::get('games', [GameController::class, 'index'])->name('games.index');
-
-// Страница одной игры по slug
-// {slug} - это переменная
+// Определяет GET-маршрут для '/games'
+// Вызывает метод index контроллера GameController
+// Отображает список всех игр
 Route::get('games/{slug}', [GameController::class, 'show'])->name('games.show');
-
+// Определяет GET-маршрут с динамическим параметром {slug}
+// Параметр передаётся в метод show контроллера GameController
+// Отображает детальную страницу конкретной игры
 // ============================================
-// 2. АДМИН-ПАНЕЛЬ (все адреса начинаются с /admin)
+// МАРШРУТЫ АДМИН-ПАНЕЛИ
 // ============================================
-
-// Группируем все админские маршруты:
-// prefix('admin') - все адреса будут начинаться с /admin
-// name('admin.') - все имена маршрутов будут начинаться с admin.
 Route::prefix('admin')->name('admin.')->group(function () {
-
-    // --------------------------------------------------------
-    // 2.1 ВХОД В АДМИНКУ (доступен всем, даже не админам)
-    // --------------------------------------------------------
-
-    // Страница входа (admin/login)
+    // Группирует маршруты с префиксом 'admin' в URL
+    // Все имена маршрутов получают префикс 'admin.'
     Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
-
-    // Отправка формы входа (POST запрос)
+    // GET-маршрут для отображения формы входа в админ-панель
     Route::post('login', [AuthController::class, 'login'])->name('login.post');
-
-    // Выход из админки (admin/logout)
+    // POST-маршрут для обработки данных формы входа
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
-
-    // --------------------------------------------------------
-    // 2.2 ЗАЩИЩЕННЫЕ МАРШРУТЫ (только для авторизованных админов)
-    // --------------------------------------------------------
+    // POST-маршрут для выхода из системы
     Route::middleware(['admin'])->group(function () {
-
-        // Главная страница админки (admin/dashboard)
+        // Группа маршрутов, защищённых middleware 'admin'
+        // Доступ только для аутентифицированных администраторов
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-        // --------------------------------------------------------
-        // 2.3 УПРАВЛЕНИЕ ЖАНРАМИ (CRUD)
-        // --------------------------------------------------------
-        // Route::resource создает сразу 7 маршрутов для жанров:
-        // GET    /admin/genres              - список жанров
-        // GET    /admin/genres/create       - форма создания
-        // POST   /admin/genres              - сохранить новый
-        // GET    /admin/genres/{genre}      - показать один жанр
-        // GET    /admin/genres/{genre}/edit - форма редактирования
-        // PUT    /admin/genres/{genre}      - обновить жанр
-        // DELETE /admin/genres/{genre}      - удалить жанр
+        // GET-маршрут для отображения главной страницы админ-панели
         Route::resource('genres', GenreController::class);
-
-        // --------------------------------------------------------
-        // 2.4 УПРАВЛЕНИЕ ИГРАМИ (вручную)
-        // --------------------------------------------------------
+        // Ресурсный маршрут для CRUD-операций с жанрами
+        // Автоматически создаёт 7 маршрутов для всех операций
         Route::prefix('games')->name('games.')->group(function () {
-
-            // Список игр в админке (admin/games) с поиском
+            // Группа маршрутов для управления играми в админ-панели
             Route::get('/', [GameController::class, 'adminIndex'])->name('index');
-
-            // Форма создания новой игры (admin/games/create)
+            // GET-маршрут для отображения списка игр в админ-панели
             Route::get('create', [GameController::class, 'create'])->name('create');
-
-            // Сохранение новой игры (POST на admin/games)
+            // GET-маршрут для отображения формы создания игры
             Route::post('/', [GameController::class, 'store'])->name('store');
-
-            // Форма редактирования игры (admin/games/5/edit)
-            // {game} - ID игры, например 5
+            // POST-маршрут для сохранения новой игры
             Route::get('{game}/edit', [GameController::class, 'edit'])->name('edit');
-
-            // Обновление игры (PUT на admin/games/5)
+            // GET-маршрут для отображения формы редактирования игры
             Route::put('{game}', [GameController::class, 'update'])->name('update');
-
-            // Удаление игры (DELETE на admin/games/5)
+            // PUT-маршрут для обновления данных игры
             Route::delete('{game}', [GameController::class, 'destroy'])->name('destroy');
+            // DELETE-маршрут для удаления игры
         });
-
-        // --------------------------------------------------------
-        // 2.5 ПРОФИЛЬ АДМИНИСТРАТОРА
-        // --------------------------------------------------------
-
-        // Страница редактирования профиля (admin/profile)
         Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
-
-        // Обновление данных профиля (PUT на admin/profile)
+        // GET-маршрут для отображения формы редактирования профиля
         Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
-
-        // Смена пароля (PUT на admin/profile/password)
+        // PUT-маршрут для обновления данных профиля
         Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+        // PUT-маршрут для обновления пароля
     });
 });

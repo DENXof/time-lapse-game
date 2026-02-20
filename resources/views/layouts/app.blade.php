@@ -150,7 +150,7 @@
 
             {{-- Логотип (слева) --}}
             <a class="navbar-brand" href="{{ route('home') }}">
-                <i class="fas fa-gamepad me-2"></i>TimeLapse Games  {{-- Иконка контроллера + название --}}
+                <i class="fas fa-gamepad me-2"></i>История компьюетрных игр  {{-- Иконка контроллера + название --}}
             </a>
 
             {{--

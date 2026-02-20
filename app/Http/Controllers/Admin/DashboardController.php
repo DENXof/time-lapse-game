@@ -1,12 +1,10 @@
 <?php
 //Контроллер админ-панели(дашборд)
 namespace App\Http\Controllers\Admin;
-
 use App\Http\Controllers\Controller;
 use App\Models\Game;
 use App\Models\Genre;
 use Illuminate\Http\Request;
-
 class DashboardController extends Controller
 {
     // Главная страница админки
@@ -21,14 +19,12 @@ class DashboardController extends Controller
                               * latest() - сортировка по created_at DESC
                               * take(5) - ограничиваем 5 записями
                               */
-
             'total_views' => Game::sum('views_count') ?? 0,   /**
                     * Общее количество просмотров всех игр
                     * sum('views_count') - суммирует значения поля views_count
                     * ?? 0 - если null, то подставляет 0
                     */
         ];
-
         return view('admin.dashboard', compact('stats')); /**
             * Передаем статистику в представление
             * compact('stats') - создает массив ['stats' => $stats] */

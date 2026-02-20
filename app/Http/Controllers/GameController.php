@@ -116,7 +116,7 @@ class GameController extends Controller
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',  // Обложка: картинка до 2MB
         ]);
 
-        // СОЗДАЕМ SLUG ИЗ НАЗВАНИЯ (например "The Witcher 3" -> "the-witcher-3")
+        // СОЗДАЕМ SLUG ИЗ НАЗВАНИЯ
         $validated['slug'] = Str::slug($validated['title']);
 
         // ЕСЛИ ЗАГРУЗИЛИ КАРТИНКУ
