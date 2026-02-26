@@ -147,12 +147,10 @@
     --}}
     <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
         <div class="container">
-
             {{-- Логотип (слева) --}}
             <a class="navbar-brand" href="{{ route('home') }}">
                 <i class="fas fa-gamepad me-2"></i>История компьюетрных игр  {{-- Иконка контроллера + название --}}
             </a>
-
             {{--
                 Кнопка для мобильного меню
                 Появляется на маленьких экранах
@@ -160,14 +158,12 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>  {{-- Три полоски --}}
             </button>
-
             {{--
                 МЕНЮ (справа)
                 collapse - скрыто на мобильных, пока не нажмут бургер
             --}}
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">  {{-- ms-auto - прижимаем вправо --}}
-
                     {{-- Пункт "Главная" --}}
                     <li class="nav-item">
                         {{--
@@ -178,7 +174,6 @@
                             <i class="fas fa-home me-1"></i> Главная
                         </a>
                     </li>
-
                     {{-- Пункт "Игры" --}}
                     <li class="nav-item">
                         {{-- Request::is('games*') - если URL начинается с /games --}}
@@ -186,7 +181,6 @@
                             <i class="fas fa-gamepad me-1"></i> Игры
                         </a>
                     </li>
-
                     {{-- Пункт "Таймлайн" --}}
                     <li class="nav-item">
                         <a class="nav-link {{ Request::is('timeline') ? 'active' : '' }}" href="{{ route('timeline') }}">
@@ -197,7 +191,6 @@
             </div>
         </div>
     </nav>
-
     {{--
         ========================================
         ОСНОВНОЕ СОДЕРЖИМОЕ
@@ -209,7 +202,6 @@
             @yield('content')
         </div>
     </main>
-
     {{--
         ========================================
         ПОДВАЛ (ФУТЕР)
@@ -223,7 +215,6 @@
                     <h5>TimeLapse Games</h5>
                     <p class="text-muted">История игровой индустрии в одном месте</p>
                 </div>
-
                 {{-- Правая часть подвала --}}
                 <div class="col-md-6 text-end">
                     <p class="text-muted mb-0">
@@ -234,10 +225,8 @@
             </div>
         </div>
     </footer>
-
     {{-- Bootstrap JS - для работы модальных окон, выпадашек и т.д. --}}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
     {{-- Место для дополнительных скриптов из дочерних страниц --}}
     @stack('scripts')
 </body>

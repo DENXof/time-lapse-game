@@ -1,9 +1,7 @@
 <?php
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-// Подключаем класс Request - через него получаем данные из форм
-// (email, пароль, галочки)
+use Illuminate\Http\Request;    // Подключаем класс Request - через него получаем данные из форм
 use Illuminate\Support\Facades\Auth;
 class AuthController extends Controller
 {
@@ -55,7 +53,6 @@ class AuthController extends Controller
             // with() - добавляем сообщение, которое покажется на следующей странице
 // В шаблоне его можно показать через session('success')
         }
-
         return back()->withErrors([
             // Если сюда попали - значит вход не удался
 // back() - вернуться на предыдущую страницу (обратно к форме)

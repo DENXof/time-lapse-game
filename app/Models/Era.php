@@ -1,18 +1,11 @@
 <?php
-// МОДЕЛЬ ИСТОРИЧЕСКОЙ ЭПОХИ
-
 namespace App\Models;
-
-// Подключаем трейт HasFactory - для создания тестовых данных
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-// Подключаем базовый класс Model
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model; // Подключаем базовый класс Model
 
 class Era extends Model
 {
-    // Подключаем трейт HasFactory
-    use HasFactory;
-
+    use HasFactory; // Подключаем трейт HasFactory
     //РАЗРЕШЕННЫЕ ДЛЯ ЗАПОЛНЕНИЯ ПОЛЯ
     protected $fillable = [
         'name',              // Название эпохи (например "Эра 8-битных компьютеров")
@@ -34,7 +27,6 @@ class Era extends Model
     public function getDurationAttribute()
     {
         // Вычисляем разницу между годом окончания и началом
-        // Например: 1995 - 1986 = 9 лет
         return $this->end_year - $this->start_year;
     }
 }

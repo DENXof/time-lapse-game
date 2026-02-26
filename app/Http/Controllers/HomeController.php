@@ -1,12 +1,9 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use Illuminate\Http\Request;
 use App\Models\Game;
 use App\Models\Genre;
 use App\Models\Era;
-
 class HomeController extends Controller
 {
     public function index()
@@ -23,18 +20,15 @@ class HomeController extends Controller
             'message' => Game::count() . ' игр доступно для просмотра!'
         ]);
     }
-
     public function timeline()
     {
         $eras = Era::orderBy('start_year', 'asc')->get();
-
         // Для каждой эпохи вручную получаем игры по годам
         foreach ($eras as $era) {
             $era->games = Game::whereBetween('release_year', [$era->start_year, $era->end_year])
                 ->orderBy('release_year')
                 ->get();
         }
-
         return view('timeline', compact('eras'));
     }
 }
