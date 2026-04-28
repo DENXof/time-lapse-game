@@ -9,7 +9,7 @@ class HomeController extends Controller
     public function index()
     {
         return view('home.index', [
-            'featuredGames' => Game::with('genre')->latest()->take(3)->get(),   //рекомендуемые игры
+            'featuredGames' => Game::with('genre')->orderBy('release_year', 'desc')->take(3)->get(),
             'popularGenres' => Genre::withCount('games')->orderBy('games_count', 'desc')->take(3)->get(),   //популярные жанры
             'eras' => Era::all(),   //все жанры
             'stats' => [    //статистика

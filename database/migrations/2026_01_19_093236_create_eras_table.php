@@ -7,51 +7,26 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-
     public function up(): void
     {
-        // ============================================================
-        // СОЗДАЕМ ТАБЛИЦУ 'eras' СО ВСЕМИ ПОЛЯМИ
-        // ============================================================
         Schema::create('eras', function (Blueprint $table) {
-
-            // ------------------------------------------------------------
-            // ОСНОВНАЯ ИНФОРМАЦИЯ ОБ ЭПОХЕ (из первой миграции)
-            // ------------------------------------------------------------
-            $table->id();                                      // Первичный ключ
-            $table->string('name');                            // Название эпохи
-            $table->string('slug')->unique();                  // URL-адрес
-            $table->integer('start_year');                     // Год начала
-            $table->integer('end_year');                       // Год окончания
-            $table->text('description');                       // Описание
-            $table->text('characteristics');                   // Характерные особенности
-
-            // ------------------------------------------------------------
-            // НОВОЕ ПОЛЕ "ПЕРЕХОД" (из второй миграции)
-            // ------------------------------------------------------------
-            $table->text('transition')                         // Как проходил переход
-                ->nullable()                                  // Может быть пустым
-                ->after('characteristics');                   // После characteristics
-
-            // ------------------------------------------------------------
-            // ПОЛЯ ДЛЯ ВИЗУАЛЬНОГО ОФОРМЛЕНИЯ (из первой миграции)
-            // ------------------------------------------------------------
-            $table->string('color_primary');                   // Основной цвет
-            $table->string('color_secondary');                 // Дополнительный цвет
-            $table->string('font_family')->default('monospace'); // Шрифт
-
-            // ------------------------------------------------------------
-            // СЛУЖЕБНЫЕ ПОЛЯ
-            // ------------------------------------------------------------
-            $table->timestamps();                               // created_at, updated_at
+            $table->id();
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->integer('start_year');
+            $table->integer('end_year');
+            $table->text('description');
+            $table->text('characteristics');
+            $table->text('transition')->nullable(); // ← убрал ->after()
+            $table->string('color_primary');
+            $table->string('color_secondary');
+            $table->string('font_family')->default('monospace');
+            $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        // ============================================================
-        // УДАЛЯЕМ ТАБЛИЦУ 'eras' ПОЛНОСТЬЮ
-        // ============================================================
         Schema::dropIfExists('eras');
     }
 };
