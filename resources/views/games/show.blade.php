@@ -56,11 +56,17 @@
                                 <span class="badge bg-info fs-6">
                                     <i class="fas fa-eye"></i> {{ $game->views_count ?? 0 }} просмотров
                                 </span>
-                                @if($game->rating_avg > 0)
-                                    <span class="badge bg-warning text-dark fs-6">
-                                        <i class="fas fa-star"></i> {{ number_format($game->rating_avg, 1) }} ({{ $game->rating_count }})
-                                    </span>
-                                @endif
+
+                                {{-- ========= ИСПРАВЛЕНО: рейтинг показывается ВСЕГДА ========= --}}
+                                <span class="badge bg-warning text-dark fs-6">
+                                    <i class="fas fa-star"></i>
+                                    @if($game->rating_count > 0)
+                                        {{ number_format($game->rating_avg, 1) }} ({{ $game->rating_count }})
+                                    @else
+                                        Нет оценок
+                                    @endif
+                                </span>
+                                {{-- ========= КОНЕЦ ИСПРАВЛЕНИЙ ========= --}}
                             </div>
 
                             {{-- КНОПКА "В ИЗБРАННОЕ" (только для авторизованных) --}}

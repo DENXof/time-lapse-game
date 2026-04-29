@@ -34,7 +34,12 @@ Route::middleware('guest')->group(function () {
 // ============================================
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // ИЗБРАННОЕ
+    Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/favorites/{game}', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+
+    // ОЦЕНКИ
     Route::post('/ratings/{game}', [RatingController::class, 'store'])->name('ratings.store');
 });
 

@@ -149,7 +149,7 @@
         <div class="container">
             {{-- Логотип (слева) --}}
             <a class="navbar-brand" href="{{ route('home') }}">
-                <i class="fas fa-gamepad me-2"></i>История компьюетрных игр  {{-- Иконка контроллера + название --}}
+                <i class="fas fa-gamepad me-2"></i>История компьютерных игр
             </a>
             {{--
                 Кнопка для мобильного меню
@@ -166,17 +166,12 @@
                 <ul class="navbar-nav ms-auto">  {{-- ms-auto - прижимаем вправо --}}
                     {{-- Пункт "Главная" --}}
                     <li class="nav-item">
-                        {{--
-                            Request::is('/') - если мы на главной, добавляем класс active
-                            active - подсвечивает активный пункт меню
-                        --}}
                         <a class="nav-link {{ Request::is('/') ? 'active' : '' }}" href="{{ route('home') }}">
                             <i class="fas fa-home me-1"></i> Главная
                         </a>
                     </li>
                     {{-- Пункт "Игры" --}}
                     <li class="nav-item">
-                        {{-- Request::is('games*') - если URL начинается с /games --}}
                         <a class="nav-link {{ Request::is('games*') ? 'active' : '' }}" href="{{ route('games.index') }}">
                             <i class="fas fa-gamepad me-1"></i> Игры
                         </a>
@@ -187,6 +182,43 @@
                             <i class="fas fa-timeline me-1"></i> Таймлайн
                         </a>
                     </li>
+
+                    {{-- ========= ДОБАВЛЕННЫЙ БЛОК АВТОРИЗАЦИИ ========= --}}
+                    @auth
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i> {{ Auth::user()->name }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{{ route('favorites.index') ?? '#' }}">
+                                        <i class="fas fa-heart text-danger me-2"></i> Избранное
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i> Выйти
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    @else
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('login') }}">
+                                <i class="fas fa-sign-in-alt me-1"></i> Вход
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-primary text-white px-3 ms-2" href="{{ route('register') }}" style="border-radius: 20px;">
+                                <i class="fas fa-user-plus me-1"></i> Регистрация
+                            </a>
+                        </li>
+                    @endauth
+                    {{-- ========= КОНЕЦ БЛОКА АВТОРИЗАЦИИ ========= --}}
                 </ul>
             </div>
         </div>

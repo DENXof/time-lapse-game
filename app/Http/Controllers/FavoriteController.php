@@ -8,22 +8,24 @@ use Illuminate\Support\Facades\Auth;
 
 class FavoriteController extends Controller
 {
+    public function index()
+    {
+        $favorites = Auth::user()->favorites()->paginate(12);
+        return view('favorites.index', compact('favorites'));
+    }
+
     public function toggle(Game $game)
     {
         $user = Auth::user();
 
         if ($user->favorites()->where('game_id', $game->id)->exists()) {
             $user->favorites()->detach($game->id);
-            $favorited = false;
+            $message = 'Игра удалена из избранного';
         } else {
             $user->favorites()->attach($game->id);
-            $favorited = true;
+            $message = 'Игра добавлена в избранное';
         }
 
-        if (request()->wantsJson()) {
-            return response()->json(['favorited' => $favorited]);
-        }
-
-        return back();
+        return back()->with('success', $message);
     }
 }

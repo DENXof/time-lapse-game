@@ -1,125 +1,93 @@
 <?php
-namespace App\Models;   // Определение пространства имён для модели
+namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;  // Импорт трейта для фабричного создания моделей
-use Illuminate\Database\Eloquent\Model; // Импорт базового класса Eloquent Model
-use Illuminate\Support\Str; // Импорт класса для работы со строками
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
-class Game extends Model    // Объявление класса Game, наследующего Eloquent Model
+class Game extends Model
 {
-    use HasFactory; // Подключение трейта для создания тестовых данных
+    use HasFactory;
 
     protected $fillable = [
-        // Массив полей, доступных для массового заполнения
-        'title',              // Название игры
-        'slug',               // URL-идентификатор
-        'release_year',       // Год выпуска
-        'developer',          // Разработчик
-        'publisher',          // Издатель
-        'description',        // Полное описание
-        'short_description',  // Краткое описание
-        'cover_image',        // Путь к файлу обложки
-        'platform',           // Платформа
-        'genre_id'            // Внешний ключ для связи с жанром
+        'title', 'slug', 'release_year', 'developer', 'publisher',
+        'description', 'short_description', 'cover_image', 'platform', 'genre_id',
+        'views_count', 'rating_avg', 'rating_count'  // Добавлены поля для рейтинга
     ];
 
-    protected $appends = ['era_style', 'decade'];   // Массив виртуальных атрибутов, добавляемых к модели
+    protected $appends = ['era_style', 'decade'];
 
-    protected static function boot()    // Переопределение метода boot для добавления событий модели
+    protected static function boot()
     {
-        parent::boot(); // Вызов родительского метода boot
+        parent::boot();
 
-        static::creating(function ($game) { // Регистрация обработчика события creating
-            // Выполняется перед сохранением новой записи
-            if (empty($game->slug)) {   // Проверка отсутствия значения в поле slug
-                $game->slug = Str::slug($game->title);  // Генерация slug из названия игры
+        static::creating(function ($game) {
+            if (empty($game->slug)) {
+                $game->slug = Str::slug($game->title);
             }
         });
     }
 
-    // ============================================
-    // СВЯЗИ С ДРУГИМИ ТАБЛИЦАМИ
-    // ============================================
-
-    /**
-     * Связь "многие к одному" с моделью Genre
-     * Игра принадлежит одному жанру
-     */
+    // ========= СВЯЗИ =========
     public function genre()
     {
         return $this->belongsTo(Genre::class);
     }
 
-    /**
-     * Связь "один ко многим" с таблицей оценок
-     * У игры может быть много оценок
-     */
     public function ratings()
     {
         return $this->hasMany(Rating::class);
     }
 
-    /**
-     * Связь "многие ко многим" с таблицей избранного
-     * Позволяет получить всех пользователей, которые добавили эту игру в избранное
-     */
     public function favoritedBy()
     {
         return $this->belongsToMany(User::class, 'favorites');
     }
 
-    // ============================================
-    // АКСЕССОРЫ (ВИРТУАЛЬНЫЕ АТРИБУТЫ)
-    // ============================================
-
-    public function getEraStyleAttribute()  // Аксессор для виртуального атрибута era_style
+    // ========= АКСЕССОРЫ =========
+    public function getEraStyleAttribute()
     {
-        return match (true) {   // Использование match для определения стиля по году
-            $this->release_year < 1985 => 'pixel',  // Возвращает 'pixel' для игр до 1985 года
-            $this->release_year < 1995 => '16bit',  // Возвращает '16bit' для игр 1985-1994
-            $this->release_year < 2005 => '3d-early',   // Возвращает '3d-early' для игр 1995-2004
-            default => 'modern' // Возвращает 'modern' для всех остальных
+        return match (true) {
+            $this->release_year < 1985 => 'pixel',
+            $this->release_year < 1995 => '16bit',
+            $this->release_year < 2005 => '3d-early',
+            default => 'modern'
         };
     }
 
-    public function getDecadeAttribute()    // Аксессор для виртуального атрибута decade
+    public function getDecadeAttribute()
     {
-        return floor($this->release_year / 10) * 10;    // Вычисление десятилетия на основе года выпуска
+        return floor($this->release_year / 10) * 10;
     }
 
-    // ============================================
-    // МЕТОДЫ ДЛЯ РАБОТЫ С ДАННЫМИ
-    // ============================================
-
-    /**
-     * Увеличивает счётчик просмотров игры
-     */
+    // ========= МЕТОДЫ =========
     public function incrementViews()
     {
         $this->increment('views_count');
     }
 
-    /**
-     * Получить оценку, которую поставил конкретный пользователь
-     *
-     * @param User|null $user Пользователь (если null - возвращает null)
-     * @return Rating|null
-     */
     public function userRating(User $user = null)
     {
-        if (!$user)
-            return null;
+        if (!$user) return null;
         return $this->ratings()->where('user_id', $user->id)->first();
     }
 
     /**
      * Обновляет средний рейтинг игры на основе всех оценок
-     * Вызывается после добавления/изменения оценки
      */
     public function updateRating()
     {
         $this->rating_avg = $this->ratings()->avg('value') ?? 0;
         $this->rating_count = $this->ratings()->count();
         $this->save();
+    }
+
+    /**
+     * Проверяет, добавил ли пользователь игру в избранное
+     */
+    public function isFavoritedBy(User $user = null)
+    {
+        if (!$user) return false;
+        return $this->favoritedBy()->where('user_id', $user->id)->exists();
     }
 }
