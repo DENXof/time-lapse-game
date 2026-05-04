@@ -78,4 +78,39 @@ class User extends Authenticatable
     {
         return $this->favorites()->where('game_id', $gameId)->exists();
     }
+
+    // ============================================
+    // ДОБАВЛЕННЫЕ МЕТОДЫ ДЛЯ КОММЕНТАРИЕВ
+    // ============================================
+
+    /**
+     * Связь "один ко многим" с таблицей комментариев
+     * Позволяет получить все комментарии пользователя
+     */
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    /**
+     * Связь "один ко многим" с таблицей лайков комментариев
+     * Позволяет получить все лайки пользователя
+     */
+    public function commentLikes()
+    {
+        return $this->hasMany(CommentLike::class);
+    }
+
+    /**
+     * Проверка, является ли пользователь администратором
+     * (если у вас есть поле role, иначе замените на свою логику)
+     */
+    public function isAdmin()
+    {
+        // Если есть поле role в таблице users
+        // return $this->role === 'admin';
+
+        // Или проверка по email (временное решение)
+        return $this->email === 'admin@example.com';
+    }
 }

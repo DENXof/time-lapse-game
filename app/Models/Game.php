@@ -10,9 +10,19 @@ class Game extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'slug', 'release_year', 'developer', 'publisher',
-        'description', 'short_description', 'cover_image', 'platform', 'genre_id',
-        'views_count', 'rating_avg', 'rating_count'  // Добавлены поля для рейтинга
+        'title',
+        'slug',
+        'release_year',
+        'developer',
+        'publisher',
+        'description',
+        'short_description',
+        'cover_image',
+        'platform',
+        'genre_id',
+        'views_count',
+        'rating_avg',
+        'rating_count'  // Добавлены поля для рейтинга
     ];
 
     protected $appends = ['era_style', 'decade'];
@@ -44,6 +54,12 @@ class Game extends Model
         return $this->belongsToMany(User::class, 'favorites');
     }
 
+    // Связь с комментариями (ДОБАВЛЕНО)
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
     // ========= АКСЕССОРЫ =========
     public function getEraStyleAttribute()
     {
@@ -68,7 +84,8 @@ class Game extends Model
 
     public function userRating(User $user = null)
     {
-        if (!$user) return null;
+        if (!$user)
+            return null;
         return $this->ratings()->where('user_id', $user->id)->first();
     }
 
@@ -87,7 +104,8 @@ class Game extends Model
      */
     public function isFavoritedBy(User $user = null)
     {
-        if (!$user) return false;
+        if (!$user)
+            return false;
         return $this->favoritedBy()->where('user_id', $user->id)->exists();
     }
 }

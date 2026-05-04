@@ -1,47 +1,94 @@
 <?php
 // КОНТРОЛЛЕР УПРАВЛЕНИЯ ИГРАМИ
-// Указываем, что это контроллер (папка Controllers)
 namespace App\Http\Controllers;
-// Подключаем нужные модели и классы
-use App\Models\Game;    // Модель игры (работа с таблицей games)
-use App\Models\Genre;   // Модель жанра (работа с таблицей genres)
-use Illuminate\Http\Request;    // Для получения данных из форм
-use Illuminate\Support\Str; // Для работы со строками (создание slug)
-use Illuminate\Support\Facades\Storage; // Для работы с файлами (загрузка обложек)
+
+use App\Models\Game;
+use App\Models\Genre;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class GameController extends Controller
 {
     // ============================================
     // ПУБЛИЧНЫЕ МЕТОДЫ (доступны всем посетителям сайта)
     // ============================================
-    //ПОКАЗАТЬ ВСЕ ИГРЫ (ГЛАВНАЯ СТРАНИЦА С ИГРАМИ)
-    public function index()
+
+    //ПОКАЗАТЬ ВСЕ ИГРЫ (С ФИЛЬТРАЦИЕЙ, ПОИСКОМ И СОРТИРОВКОЙ)
+    public function index(Request $request)
     {
-        // Берем все игры из БД
-        $games = Game::with('genre')    // Загружаем для каждой игры её жанр
-            ->orderBy('release_year', 'desc')   // Сортируем от новых к старым (2025, 2024, 2023...)
-            ->paginate(12); // Показываем по 12 игр на странице
-        // Берем все жанры из БД (для фильтра или выпадающего списка)
-        $genres = Genre::all();
-        // Отправляем данные в шаблон games/index.blade.php
+        $query = Game::with('genre');
+
+        // ПОИСК ПО НАЗВАНИЮ
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('title', 'like', '%' . $search . '%');
+        }
+
+        // ФИЛЬТР ПО ЖАНРУ
+        if ($request->filled('genre')) {
+            $query->where('genre_id', $request->genre);
+        }
+
+        // ФИЛЬТР ПО ДЕСЯТИЛЕТИЮ
+        if ($request->filled('decade')) {
+            $startYear = $request->decade;
+            $endYear = $startYear + 9;
+            $query->whereBetween('release_year', [$startYear, $endYear]);
+        }
+
+        // ФИЛЬТР ПО ПЛАТФОРМЕ
+        if ($request->filled('platform')) {
+            $query->where('platform', 'like', '%' . $request->platform . '%');
+        }
+
+        // СОРТИРОВКА
+        $sort = $request->get('sort', 'newest');
+
+        switch ($sort) {
+            case 'newest':
+                $query->orderBy('release_year', 'desc');
+                break;
+            case 'oldest':
+                $query->orderBy('release_year', 'asc');
+                break;
+            case 'rating':
+                $query->orderBy('rating_avg', 'desc');
+                break;
+            case 'popular':
+                $query->orderBy('views_count', 'desc');
+                break;
+            case 'az':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'za':
+                $query->orderBy('title', 'desc');
+                break;
+            default:
+                $query->orderBy('release_year', 'desc');
+        }
+
+        $games = $query->paginate(12)->withQueryString();
+        $genres = Genre::orderBy('name')->get();
+
         return view('games.index', compact('games', 'genres'));
     }
-    //(ДЕТАЛЬНАЯ СТРАНИЦА)
+
+    // ДЕТАЛЬНАЯ СТРАНИЦА
     public function show($slug)
     {
-        // Ищем игру по её slug (название игры URL)
-        $game = Game::where('slug', $slug)  // Где slug совпадает с тем, что в URL
-            ->with('genre') // Загружаем жанр игры
-            ->firstOrFail();    // Если не нашли - показываем ошибку 404
-        // Увеличиваем счетчик просмотров на 1
+        $game = Game::where('slug', $slug)
+            ->with('genre')
+            ->firstOrFail();
+
         $game->increment('views_count');
-        // Ищем похожие игры (того же жанра)
-        $relatedGames = Game::where('genre_id', $game->genre_id)    // Тот же жанр
-            ->where('id', '!=', $game->id)  // Не та же самая игра
-            ->orderBy('release_year', 'desc')   // Сначала новые
-            ->take(3)   // Берём только 3 игры
-            ->get();    // Получаем результат
-        // Отправляем данные в шаблон games/show.blade.php
+
+        $relatedGames = Game::where('genre_id', $game->genre_id)
+            ->where('id', '!=', $game->id)
+            ->orderBy('release_year', 'desc')
+            ->take(3)
+            ->get();
+
         return view('games.show', compact('game', 'relatedGames'));
     }
     // ============================================

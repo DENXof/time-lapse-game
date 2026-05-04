@@ -6,10 +6,11 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\RatingController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GenreController;
-use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
 
 // ============================================
 // ПУБЛИЧНЫЕ МАРШРУТЫ (доступны всем)
@@ -35,12 +36,33 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    // ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'index'])->name('index');
+        Route::get('/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('edit');
+        Route::put('/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('update');
+        Route::get('/change-password', [\App\Http\Controllers\ProfileController::class, 'changePasswordForm'])->name('change-password');
+        Route::put('/update-password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('update-password');
+        Route::get('/ratings', [\App\Http\Controllers\ProfileController::class, 'ratings'])->name('ratings');
+    });
+
     // ИЗБРАННОЕ
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/favorites/{game}', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
 
     // ОЦЕНКИ
     Route::post('/ratings/{game}', [RatingController::class, 'store'])->name('ratings.store');
+
+    // ============================================
+    // КОММЕНТАРИИ (ДОБАВИТЬ ЭТОТ БЛОК)
+    // ============================================
+    Route::prefix('comments')->name('comments.')->group(function () {
+        Route::post('/game/{game}', [CommentController::class, 'store'])->name('store');
+        Route::put('/{comment}', [CommentController::class, 'update'])->name('update');
+        Route::delete('/{comment}', [CommentController::class, 'destroy'])->name('destroy');
+        Route::post('/{comment}/like', [CommentController::class, 'like'])->name('like');
+        Route::post('/{comment}/reply', [CommentController::class, 'reply'])->name('reply');
+    });
 });
 
 // ============================================
@@ -66,8 +88,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('{game}', [GameController::class, 'destroy'])->name('destroy');
         });
 
-        Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+        Route::get('profile', [AdminProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('profile', [AdminProfileController::class, 'update'])->name('profile.update');
+        Route::put('profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password.update');
     });
 });

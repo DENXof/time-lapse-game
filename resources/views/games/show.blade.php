@@ -129,6 +129,66 @@
                     <p class="card-text fs-5">{{ $game->description }}</p>
                 </div>
             </div>
+
+            {{-- ========= ДОБАВЛЕННЫЙ БЛОК КОММЕНТАРИЕВ ========= --}}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h3 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>
+                        Комментарии ({{ $game->comments()->count() }})
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {{-- ФОРМА ДОБАВЛЕНИЯ КОММЕНТАРИЯ --}}
+                    @auth
+                        <form action="{{ route('comments.store', $game) }}" method="POST" class="mb-4" id="main-comment-form">
+                            @csrf
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Ваш комментарий</label>
+                                <textarea name="content" class="form-control" rows="3"
+                                          placeholder="Поделитесь своим мнением об игре..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Отправить
+                            </button>
+                        </form>
+                    @else
+                        <div class="alert alert-info text-center py-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <a href="{{ route('login') }}">Войдите</a> или
+                            <a href="{{ route('register') }}">зарегистрируйтесь</a>,
+                            чтобы оставить комментарий.
+                        </div>
+                    @endauth
+
+                    {{-- СПИСОК КОММЕНТАРИЕВ --}}
+                    <div id="comments-list">
+                        @php
+                            $comments = $game->comments()
+                                ->whereNull('parent_id')
+                                ->with(['user', 'replies.user', 'replies.likes'])
+                                ->latest()
+                                ->paginate(10);
+                        @endphp
+
+                        @if($comments->count() > 0)
+                            @foreach($comments as $comment)
+                                @include('comments.partials.comment', ['comment' => $comment])
+                            @endforeach
+
+                            <div class="mt-4">
+                                {{ $comments->links() }}
+                            </div>
+                        @else
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-comment-slash fa-4x mb-3"></i>
+                                <p class="mb-0">Пока нет комментариев. Будьте первым!</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            {{-- ========= КОНЕЦ БЛОКА КОММЕНТАРИЕВ ========= --}}
         </div>
 
         {{-- ПРАВАЯ КОЛОНКА (ПОХОЖИЕ ИГРЫ И СТАТИСТИКА) --}}
@@ -214,3 +274,100 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Лайк комментария
+    $(document).on('click', '.like-btn', function(e) {
+        e.preventDefault();
+        let btn = $(this);
+        let commentId = btn.data('id');
+
+        $.post('/comments/' + commentId + '/like', {
+            _token: '{{ csrf_token() }}'
+        }, function(response) {
+            if (response.success) {
+                let icon = btn.find('i');
+                let countSpan = btn.find('.likes-count');
+
+                if (response.liked) {
+                    icon.removeClass('text-secondary').addClass('text-danger');
+                } else {
+                    icon.removeClass('text-danger').addClass('text-secondary');
+                }
+                countSpan.text(response.likes_count);
+            }
+        });
+    });
+
+    // Ответ на комментарий
+    $(document).on('click', '.reply-btn', function() {
+        let commentId = $(this).data('id');
+        $('#reply-form-' + commentId).toggle();
+    });
+
+    // Отправка ответа через AJAX
+    $(document).on('submit', '.reply-form-ajax', function(e) {
+        e.preventDefault();
+        let form = $(this);
+        let url = form.attr('action');
+
+        $.post(url, form.serialize(), function(response) {
+            if (response.success) {
+                location.reload();
+            }
+        });
+    });
+
+    // Редактирование комментария
+    $(document).on('click', '.edit-comment', function() {
+        let commentId = $(this).data('id');
+        $('#comment-' + commentId + ' .comment-content').hide();
+        $('#edit-form-' + commentId).show();
+    });
+
+    $(document).on('click', '.cancel-edit', function() {
+        let form = $(this).closest('.edit-form');
+        form.hide();
+        form.prev('.comment-content').show();
+    });
+
+    $(document).on('submit', '.edit-form-ajax', function(e) {
+        e.preventDefault();
+        let form = $(this);
+        let url = form.attr('action');
+
+        $.ajax({
+            url: url,
+            method: 'PUT',
+            data: form.serialize(),
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                }
+            }
+        });
+    });
+
+    // Удаление комментария
+    $(document).on('click', '.delete-comment', function() {
+        if (confirm('Вы уверены, что хотите удалить комментарий?')) {
+            let commentId = $(this).data('id');
+
+            $.ajax({
+                url: '/comments/' + commentId,
+                method: 'DELETE',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function(response) {
+                    if (response.success) {
+                        $('#comment-' + commentId).remove();
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+@endpush
