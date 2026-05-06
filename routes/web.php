@@ -20,6 +20,13 @@ Route::get('/timeline', [HomeController::class, 'timeline'])->name('timeline');
 Route::get('games', [GameController::class, 'index'])->name('games.index');
 Route::get('games/{slug}', [GameController::class, 'show'])->name('games.show');
 
+// ========= ДОБАВЛЕННЫЕ МАРШРУТЫ ДЛЯ ЭТАПА 4 =========
+Route::get('/top', [GameController::class, 'top'])->name('games.top');
+Route::get('/new-releases', [GameController::class, 'newReleases'])->name('games.new');
+Route::get('/random-game', [GameController::class, 'randomGame'])->name('games.random');
+Route::get('/calendar', [GameController::class, 'calendar'])->name('games.calendar');
+// ====================================================
+
 // ============================================
 // АУТЕНТИФИКАЦИЯ ПОЛЬЗОВАТЕЛЕЙ (гости)
 // ============================================
@@ -53,9 +60,7 @@ Route::middleware('auth')->group(function () {
     // ОЦЕНКИ
     Route::post('/ratings/{game}', [RatingController::class, 'store'])->name('ratings.store');
 
-    // ============================================
-    // КОММЕНТАРИИ (ДОБАВИТЬ ЭТОТ БЛОК)
-    // ============================================
+    // КОММЕНТАРИИ
     Route::prefix('comments')->name('comments.')->group(function () {
         Route::post('/game/{game}', [CommentController::class, 'store'])->name('store');
         Route::put('/{comment}', [CommentController::class, 'update'])->name('update');

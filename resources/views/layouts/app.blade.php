@@ -100,11 +100,25 @@
                             <i class="fas fa-home me-1"></i> Главная
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ Request::is('games*') ? 'active' : '' }}" href="{{ route('games.index') }}">
+
+                    <!-- ========= ОБНОВЛЁННЫЙ ПУНКТ "ИГРЫ" С ВЫПАДАЮЩИМ МЕНЮ ========= -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {{ Request::is('games*') ? 'active' : '' }}"
+                           href="#" id="gamesDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-gamepad me-1"></i> Игры
                         </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('games.index') }}">📚 Все игры</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ route('games.top') }}">🏆 Топ-100</a></li>
+                            <li><a class="dropdown-item" href="{{ route('games.new') }}">🆕 Новинки</a></li>
+                            <li><a class="dropdown-item" href="{{ route('games.calendar') }}">📅 Календарь релизов</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ route('games.random') }}">🎲 Случайная игра</a></li>
+                        </ul>
                     </li>
+                    <!-- =========================================================== -->
+
                     <li class="nav-item">
                         <a class="nav-link {{ Request::is('timeline') ? 'active' : '' }}" href="{{ route('timeline') }}">
                             <i class="fas fa-timeline me-1"></i> Таймлайн

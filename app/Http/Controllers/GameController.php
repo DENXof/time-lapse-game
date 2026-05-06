@@ -14,7 +14,7 @@ class GameController extends Controller
     // ПУБЛИЧНЫЕ МЕТОДЫ (доступны всем посетителям сайта)
     // ============================================
 
-    //ПОКАЗАТЬ ВСЕ ИГРЫ (С ФИЛЬТРАЦИЕЙ, ПОИСКОМ И СОРТИРОВКОЙ)
+    // ПОКАЗАТЬ ВСЕ ИГРЫ (С ФИЛЬТРАЦИЕЙ, ПОИСКОМ И СОРТИРОВКОЙ)
     public function index(Request $request)
     {
         $query = Game::with('genre');
@@ -91,10 +91,77 @@ class GameController extends Controller
 
         return view('games.show', compact('game', 'relatedGames'));
     }
+
+    // ========= ДОБАВЛЕННЫЕ МЕТОДЫ ДЛЯ ЭТАПА 4 =========
+
+    /**
+     * ТОП-100 игр (по рейтингу)
+     */
+    public function top()
+    {
+        $games = Game::with('genre')
+            ->where('rating_count', '>', 0)  // Только игры с оценками
+            ->orderBy('rating_avg', 'desc')
+            ->orderBy('rating_count', 'desc')
+            ->paginate(20);
+
+        return view('games.top', compact('games'));
+    }
+
+    /**
+     * НОВИНКИ (игры последних 2 лет)
+     */
+    public function newReleases()
+    {
+        $currentYear = date('Y');
+        $twoYearsAgo = $currentYear - 2;
+
+        $games = Game::with('genre')
+            ->where('release_year', '>=', $twoYearsAgo)
+            ->orderBy('release_year', 'desc')
+            ->paginate(20);
+
+        return view('games.new', compact('games'));
+    }
+
+    /**
+     * СЛУЧАЙНАЯ ИГРА
+     */
+    public function randomGame()
+    {
+        $game = Game::inRandomOrder()->first();
+
+        if (!$game) {
+            return redirect()->route('games.index')->with('error', 'Игры не найдены');
+        }
+
+        return redirect()->route('games.show', $game->slug);
+    }
+
+    /**
+     * КАЛЕНДАРЬ РЕЛИЗОВ (группировка по десятилетиям)
+     */
+    public function calendar()
+    {
+        // Получаем все игры, сгруппированные по десятилетиям
+        $gamesByDecade = Game::with('genre')
+            ->orderBy('release_year', 'desc')
+            ->get()
+            ->groupBy(function ($game) {
+                return floor($game->release_year / 10) * 10;
+            });
+
+        // Сортируем десятилетия по убыванию
+        $decades = $gamesByDecade->keys()->sortDesc();
+
+        return view('games.calendar', compact('gamesByDecade', 'decades'));
+    }
+
     // ============================================
     // АДМИНСКИЕ МЕТОДЫ (только для админов)
     // ============================================
-    //СПИСОК ИГР С ПОИСКОМ
+
+    // СПИСОК ИГР С ПОИСКОМ
     public function adminIndex(Request $request)
     {
         // Начинаем запрос к БД, сразу подгружаем жанры
@@ -121,7 +188,8 @@ class GameController extends Controller
         // Отправляем в шаблон admin/games/index.blade.php
         return view('admin.games.index', compact('games'));
     }
-    //ФОРМА ДОБАВЛЕНИЯ НОВОЙ ИГРЫ
+
+    // ФОРМА ДОБАВЛЕНИЯ НОВОЙ ИГРЫ
     public function create()
     {
         // Получаем все жанры для выпадающего списка
@@ -129,7 +197,8 @@ class GameController extends Controller
         // Показываем форму создания игры
         return view('admin.games.create', compact('genres'));
     }
-    //СОХРАНИТЬ НОВУЮ ИГРУ
+
+    // СОХРАНИТЬ НОВУЮ ИГРУ
     public function store(Request $request)
     {
         // ПРОВЕРЯЕМ, ЧТО ПОЛЯ ЗАПОЛНЕНЫ ПРАВИЛЬНО
@@ -158,7 +227,8 @@ class GameController extends Controller
         return redirect()->route('admin.games.index')
             ->with('success', 'Игра успешно добавлена!');
     }
-    //ФОРМА РЕДАКТИРОВАНИЯ ИГРЫ
+
+    // ФОРМА РЕДАКТИРОВАНИЯ ИГРЫ
     public function edit($id)
     {
         // Ищем игру по ID, если нет - 404
@@ -168,7 +238,8 @@ class GameController extends Controller
         // Показываем форму редактирования
         return view('admin.games.edit', compact('game', 'genres'));
     }
-    //ОБНОВИТЬ ИГРУ
+
+    // ОБНОВИТЬ ИГРУ
     public function update(Request $request, $id)
     {
         // Ищем игру по ID
@@ -204,7 +275,8 @@ class GameController extends Controller
         return redirect()->route('admin.games.index')
             ->with('success', 'Игра успешно обновлена!');
     }
-    //УДАЛИТЬ ИГРУ
+
+    // УДАЛИТЬ ИГРУ
     public function destroy($id)
     {
         // Ищем игру по ID
