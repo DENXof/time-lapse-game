@@ -127,7 +127,7 @@
             </div>
 
             <!-- Избранное (последние) -->
-            <div class="card shadow-sm">
+            <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">Избранные игры</h5>
                 </div>
@@ -157,6 +157,52 @@
                     @endif
                 </div>
             </div>
+
+            <!-- ========= ДОБАВЛЕННЫЙ БЛОК ДОСТИЖЕНИЙ ========= -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-trophy text-warning me-2"></i>
+                        Достижения ({{ $user->achievements->count() }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if($user->achievements->count() > 0)
+                        <div class="row">
+                            @foreach($user->achievements as $achievement)
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center p-2 border rounded">
+                                        <div class="flex-shrink-0">
+                                            <i class="{{ $achievement->icon }} fa-2x text-warning"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-0">{{ $achievement->name }}</h6>
+                                            <small class="text-muted">
+                                                {{ $achievement->description }}
+                                                <br>
+                                                <i class="fas fa-star text-warning"></i> +{{ $achievement->points }} очков
+                                            </small>
+                                        </div>
+                                        <div>
+                                            <small class="text-success">
+                                                {{ \Carbon\Carbon::parse($achievement->pivot->earned_at)->format('d.m.Y') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="mt-3 text-end border-top pt-3">
+                            <strong>Всего очков: {{ $user->total_points }}</strong>
+                        </div>
+                    @else
+                        <p class="text-muted text-center mb-0">
+                            🎯 Пока нет достижений. Будьте активнее, чтобы их получать!
+                        </p>
+                    @endif
+                </div>
+            </div>
+            <!-- ========= КОНЕЦ БЛОКА ДОСТИЖЕНИЙ ========= -->
         </div>
     </div>
 </div>

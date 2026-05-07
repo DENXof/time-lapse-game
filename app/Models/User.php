@@ -103,14 +103,53 @@ class User extends Authenticatable
 
     /**
      * Проверка, является ли пользователь администратором
-     * (если у вас есть поле role, иначе замените на свою логику)
      */
     public function isAdmin()
     {
-        // Если есть поле role в таблице users
-        // return $this->role === 'admin';
-
-        // Или проверка по email (временное решение)
         return $this->email === 'admin@example.com';
+    }
+
+    // ============================================
+    // ДОБАВЛЕННЫЕ МЕТОДЫ ДЛЯ ДОСТИЖЕНИЙ
+    // ============================================
+
+    /**
+     * Связь "многие ко многим" с таблицей достижений
+     */
+    public function achievements()
+    {
+        return $this->belongsToMany(Achievement::class, 'user_achievements')
+            ->withPivot('earned_at', 'is_new')
+            ->withTimestamps();
+    }
+
+    /**
+     * Получить общее количество очков пользователя
+     */
+    public function getTotalPointsAttribute()
+    {
+        return $this->achievements()->sum('points');
+    }
+
+    /**
+     * Получить новые достижения (не просмотренные)
+     */
+    public function getNewAchievementsAttribute()
+    {
+        return $this->achievements()
+            ->wherePivot('is_new', true)
+            ->get();
+    }
+
+    /**
+     * Отметить все достижения как просмотренные
+     */
+    public function markAchievementsAsSeen()
+    {
+        $this->achievements()
+            ->wherePivot('is_new', true)
+            ->each(function ($achievement) {
+                $achievement->pivot->update(['is_new' => false]);
+            });
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Comment;
 use App\Models\CommentLike;
 use App\Models\Game;
+use App\Services\AchievementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +15,7 @@ class CommentController extends Controller
     public function index(Game $game)
     {
         $comments = $game->comments()
-            ->whereNull('parent_id') // Только корневые комментарии
+            ->whereNull('parent_id')
             ->with(['user', 'replies.user', 'replies.likes'])
             ->latest()
             ->paginate(10);
@@ -26,7 +27,7 @@ class CommentController extends Controller
     public function store(Request $request, Game $game)
     {
         $request->validate([
-            'content' => 'required|string|min:2|max:1000',
+            'content' => 'required|string|min:2|max:1000',  // ИСПРАВЛЕНО: max=1000 → max:1000
             'parent_id' => 'nullable|exists:comments,id'
         ]);
 
@@ -36,6 +37,15 @@ class CommentController extends Controller
             'parent_id' => $request->parent_id,
             'content' => $request->content,
         ]);
+
+        // ========= ПРОВЕРКА ДОСТИЖЕНИЙ =========
+        $achievementService = new AchievementService();
+        $newAchievements = $achievementService->checkAndAward(Auth::user(), 'comment');
+
+        if (!empty($newAchievements)) {
+            session()->flash('new_achievements', $newAchievements);
+        }
+        // =======================================
 
         if ($request->ajax()) {
             return response()->json([
@@ -50,13 +60,12 @@ class CommentController extends Controller
     // Обновить комментарий
     public function update(Request $request, Comment $comment)
     {
-        // Проверка прав: только автор или админ
         if (Auth::id() !== $comment->user_id && !Auth::user()->isAdmin()) {
             abort(403);
         }
 
         $request->validate([
-            'content' => 'required|string|min:2|max:1000'
+            'content' => 'required|string|min:2|max:1000'  // ИСПРАВЛЕНО: max=1000 → max:1000
         ]);
 
         $comment->update(['content' => $request->content]);
@@ -71,7 +80,6 @@ class CommentController extends Controller
     // Удалить комментарий
     public function destroy(Comment $comment)
     {
-        // Проверка прав
         if (Auth::id() !== $comment->user_id && !Auth::user()->isAdmin()) {
             abort(403);
         }
@@ -95,12 +103,10 @@ class CommentController extends Controller
             ->first();
 
         if ($existingLike) {
-            // Удалить лайк
             $existingLike->delete();
             $comment->decrementLikesCount();
             $liked = false;
         } else {
-            // Добавить лайк
             CommentLike::create([
                 'user_id' => $user->id,
                 'comment_id' => $comment->id
@@ -108,6 +114,15 @@ class CommentController extends Controller
             $comment->incrementLikesCount();
             $liked = true;
         }
+
+        // ========= ПРОВЕРКА ДОСТИЖЕНИЙ ДЛЯ АВТОРА КОММЕНТАРИЯ =========
+        $achievementService = new AchievementService();
+        $newAchievements = $achievementService->checkAndAward($comment->user, 'likes');
+
+        if (!empty($newAchievements)) {
+            session()->flash('new_achievements', $newAchievements);
+        }
+        // =============================================================
 
         if (request()->ajax()) {
             return response()->json([
@@ -124,7 +139,7 @@ class CommentController extends Controller
     public function reply(Request $request, Comment $comment)
     {
         $request->validate([
-            'content' => 'required|string|min:2|max:1000'
+            'content' => 'required|string|min:2|max:1000'  // ИСПРАВЛЕНО: max=1000 → max:1000
         ]);
 
         $reply = Comment::create([

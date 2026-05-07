@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GenreController;
@@ -26,6 +27,10 @@ Route::get('/new-releases', [GameController::class, 'newReleases'])->name('games
 Route::get('/random-game', [GameController::class, 'randomGame'])->name('games.random');
 Route::get('/calendar', [GameController::class, 'calendar'])->name('games.calendar');
 // ====================================================
+
+// ========= ДОБАВЛЕННЫЙ МАРШРУТ ДЛЯ ДОСТИЖЕНИЙ =========
+Route::get('/achievements', [AchievementController::class, 'index'])->name('achievements.index');
+// =======================================================
 
 // ============================================
 // АУТЕНТИФИКАЦИЯ ПОЛЬЗОВАТЕЛЕЙ (гости)

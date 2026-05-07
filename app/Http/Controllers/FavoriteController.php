@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Game;
+use App\Services\AchievementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,6 +26,15 @@ class FavoriteController extends Controller
             $user->favorites()->attach($game->id);
             $message = 'Игра добавлена в избранное';
         }
+
+        // ========= ПРОВЕРКА ДОСТИЖЕНИЙ =========
+        $achievementService = new AchievementService();
+        $newAchievements = $achievementService->checkAndAward($user, 'favorite');
+
+        if (!empty($newAchievements)) {
+            session()->flash('new_achievements', $newAchievements);
+        }
+        // =======================================
 
         return back()->with('success', $message);
     }

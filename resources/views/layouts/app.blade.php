@@ -78,6 +78,11 @@
             color: #333;
             margin-bottom: 30px;
         }
+
+        /* Стили для тостов */
+        .toast-container {
+            z-index: 1100;
+        }
     </style>
 
     @stack('styles')
@@ -101,7 +106,7 @@
                         </a>
                     </li>
 
-                    <!-- ========= ОБНОВЛЁННЫЙ ПУНКТ "ИГРЫ" С ВЫПАДАЮЩИМ МЕНЮ ========= -->
+                    <!-- ПУНКТ "ИГРЫ" С ВЫПАДАЮЩИМ МЕНЮ -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {{ Request::is('games*') ? 'active' : '' }}"
                            href="#" id="gamesDropdown" role="button" data-bs-toggle="dropdown">
@@ -117,11 +122,16 @@
                             <li><a class="dropdown-item" href="{{ route('games.random') }}">🎲 Случайная игра</a></li>
                         </ul>
                     </li>
-                    <!-- =========================================================== -->
 
                     <li class="nav-item">
                         <a class="nav-link {{ Request::is('timeline') ? 'active' : '' }}" href="{{ route('timeline') }}">
                             <i class="fas fa-timeline me-1"></i> Таймлайн
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('achievements.index') }}">
+                            <i class="fas fa-trophy me-1"></i> Достижения
                         </a>
                     </li>
                 </ul>
@@ -141,6 +151,9 @@
                     <li class="nav-item dropdown" style="list-style: none;">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle me-1"></i> {{ Auth::user()->name }}
+                            @if(Auth::user()->new_achievements->count() > 0)
+                                <span class="badge bg-danger rounded-pill">new</span>
+                            @endif
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
@@ -156,6 +169,14 @@
                             <li>
                                 <a class="dropdown-item" href="{{ route('profile.ratings') }}">
                                     <i class="fas fa-star text-warning me-2"></i> Мои оценки
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('achievements.index') }}">
+                                    <i class="fas fa-trophy text-warning me-2"></i> Достижения
+                                    @if(Auth::user()->new_achievements->count() > 0)
+                                        <span class="badge bg-danger float-end">{{ Auth::user()->new_achievements->count() }}</span>
+                                    @endif
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
@@ -200,6 +221,48 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- ========= УВЕДОМЛЕНИЯ О ДОСТИЖЕНИЯХ ========= -->
+    @if(session('new_achievements'))
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            @foreach(session('new_achievements') as $achievement)
+                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                    <div class="toast-header bg-success text-white">
+                        <i class="fas fa-trophy me-2"></i>
+                        <strong class="me-auto">Новое достижение!</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="{{ $achievement->icon }} fa-3x text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0">{{ $achievement->name }}</h6>
+                                <small>{{ $achievement->description }}</small>
+                                <br>
+                                <small class="text-success">+{{ $achievement->points }} очков</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    @endif
+
+    <script>
+        // Автоматическое скрытие тостов
+        document.addEventListener('DOMContentLoaded', function() {
+            var toasts = document.querySelectorAll('.toast');
+            toasts.forEach(function(toast) {
+                setTimeout(function() {
+                    toast.classList.remove('show');
+                }, 5000);
+            });
+        });
+    </script>
+    <!-- =========================================== -->
+
     @stack('scripts')
 </body>
 </html>
