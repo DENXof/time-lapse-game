@@ -8,6 +8,8 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\AchievementController;
+use App\Http\Controllers\FriendController;
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GenreController;
@@ -56,6 +58,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/change-password', [\App\Http\Controllers\ProfileController::class, 'changePasswordForm'])->name('change-password');
         Route::put('/update-password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('update-password');
         Route::get('/ratings', [\App\Http\Controllers\ProfileController::class, 'ratings'])->name('ratings');
+        Route::get('/{user}', [\App\Http\Controllers\ProfileController::class, 'show'])->name('show');
     });
 
     // ИЗБРАННОЕ
@@ -73,6 +76,22 @@ Route::middleware('auth')->group(function () {
         Route::post('/{comment}/like', [CommentController::class, 'like'])->name('like');
         Route::post('/{comment}/reply', [CommentController::class, 'reply'])->name('reply');
     });
+
+    // ========= ДОБАВЛЕННЫЕ МАРШРУТЫ ДЛЯ СОЦИАЛЬНЫХ ФУНКЦИЙ =========
+    Route::prefix('friends')->name('friends.')->group(function () {
+        Route::get('/', [FriendController::class, 'index'])->name('index');
+        Route::get('/requests', [FriendController::class, 'requests'])->name('requests');
+        Route::post('/send/{user}', [FriendController::class, 'sendRequest'])->name('send');
+        Route::post('/accept/{friendship}', [FriendController::class, 'accept'])->name('accept');
+        Route::post('/reject/{friendship}', [FriendController::class, 'reject'])->name('reject');
+        Route::delete('/remove/{user}', [FriendController::class, 'destroy'])->name('remove');
+    });
+
+    Route::prefix('activity')->name('activity.')->group(function () {
+        Route::get('/feed', [ActivityController::class, 'feed'])->name('feed');
+        Route::get('/my', [ActivityController::class, 'myActivity'])->name('my');
+    });
+    // ================================================================
 });
 
 // ============================================

@@ -6,6 +6,7 @@ use App\Models\Comment;
 use App\Models\CommentLike;
 use App\Models\Game;
 use App\Services\AchievementService;
+use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,7 +28,7 @@ class CommentController extends Controller
     public function store(Request $request, Game $game)
     {
         $request->validate([
-            'content' => 'required|string|min:2|max:1000',  // ИСПРАВЛЕНО: max=1000 → max:1000
+            'content' => 'required|string|min:2|max:1000',
             'parent_id' => 'nullable|exists:comments,id'
         ]);
 
@@ -37,6 +38,10 @@ class CommentController extends Controller
             'parent_id' => $request->parent_id,
             'content' => $request->content,
         ]);
+
+        // ========= ЛОГИРОВАНИЕ АКТИВНОСТИ =========
+        ActivityService::log('comment', $comment);
+        // ==========================================
 
         // ========= ПРОВЕРКА ДОСТИЖЕНИЙ =========
         $achievementService = new AchievementService();
@@ -65,7 +70,7 @@ class CommentController extends Controller
         }
 
         $request->validate([
-            'content' => 'required|string|min:2|max:1000'  // ИСПРАВЛЕНО: max=1000 → max:1000
+            'content' => 'required|string|min:2|max:1000'
         ]);
 
         $comment->update(['content' => $request->content]);
@@ -139,7 +144,7 @@ class CommentController extends Controller
     public function reply(Request $request, Comment $comment)
     {
         $request->validate([
-            'content' => 'required|string|min:2|max:1000'  // ИСПРАВЛЕНО: max=1000 → max:1000
+            'content' => 'required|string|min:2|max:1000'
         ]);
 
         $reply = Comment::create([
@@ -148,6 +153,10 @@ class CommentController extends Controller
             'parent_id' => $comment->id,
             'content' => $request->content,
         ]);
+
+        // ========= ЛОГИРОВАНИЕ АКТИВНОСТИ ДЛЯ ОТВЕТА =========
+        ActivityService::log('comment', $reply);
+        // =====================================================
 
         if ($request->ajax()) {
             return response()->json([

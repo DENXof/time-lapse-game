@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Game;
 use App\Services\AchievementService;
+use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,6 +19,7 @@ class FavoriteController extends Controller
     public function toggle(Game $game)
     {
         $user = Auth::user();
+        $isAdding = false;
 
         if ($user->favorites()->where('game_id', $game->id)->exists()) {
             $user->favorites()->detach($game->id);
@@ -25,7 +27,14 @@ class FavoriteController extends Controller
         } else {
             $user->favorites()->attach($game->id);
             $message = 'Игра добавлена в избранное';
+            $isAdding = true;
         }
+
+        // ========= ЛОГИРОВАНИЕ АКТИВНОСТИ =========
+        if ($isAdding) {
+            ActivityService::log('favorite', $game);
+        }
+        // ==========================================
 
         // ========= ПРОВЕРКА ДОСТИЖЕНИЙ =========
         $achievementService = new AchievementService();

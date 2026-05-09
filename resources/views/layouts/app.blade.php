@@ -83,6 +83,25 @@
         .toast-container {
             z-index: 1100;
         }
+
+        /* Стили для аватаров в комментариях */
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+        }
+
+        .avatar-md {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+        }
+
+        .avatar-lg {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+        }
     </style>
 
     @stack('styles')
@@ -171,6 +190,23 @@
                                     <i class="fas fa-star text-warning me-2"></i> Мои оценки
                                 </a>
                             </li>
+                            <!-- ========= СОЦИАЛЬНЫЕ ФУНКЦИИ ========= -->
+                            <li>
+                                <a class="dropdown-item" href="{{ route('friends.index') }}">
+                                    <i class="fas fa-users me-2"></i> Мои друзья
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('activity.feed') }}">
+                                    <i class="fas fa-rss me-2"></i> Лента активности
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('activity.my') }}">
+                                    <i class="fas fa-history me-2"></i> Моя активность
+                                </a>
+                            </li>
+                            <!-- ===================================== -->
                             <li>
                                 <a class="dropdown-item" href="{{ route('achievements.index') }}">
                                     <i class="fas fa-trophy text-warning me-2"></i> Достижения
@@ -200,6 +236,31 @@
 
     <main class="py-4">
         <div class="container">
+            <!-- Сообщения об успехе/ошибке -->
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    @foreach($errors->all() as $error)
+                        {{ $error }}<br>
+                    @endforeach
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+
             @yield('content')
         </div>
     </main>
@@ -257,6 +318,17 @@
             toasts.forEach(function(toast) {
                 setTimeout(function() {
                     toast.classList.remove('show');
+                }, 5000);
+            });
+
+            // Автоматическое скрытие алертов через 5 секунд
+            var alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    alert.classList.remove('show');
+                    setTimeout(function() {
+                        alert.remove();
+                    }, 150);
                 }, 5000);
             });
         });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Game;
 use App\Models\Rating;
 use App\Services\AchievementService;
+use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,6 +29,10 @@ class RatingController extends Controller
 
         // Пересчитать рейтинг игры
         $game->updateRating();
+
+        // ========= ЛОГИРОВАНИЕ АКТИВНОСТИ =========
+        ActivityService::log('rating', $game, ['rating' => $request->value]);
+        // ==========================================
 
         // ========= ПРОВЕРКА ДОСТИЖЕНИЙ =========
         $achievementService = new AchievementService();

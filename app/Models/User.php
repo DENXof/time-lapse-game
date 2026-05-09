@@ -52,7 +52,6 @@ class User extends Authenticatable
 
     /**
      * Связь "многие ко многим" с таблицей избранного
-     * Позволяет получить все игры, которые пользователь добавил в избранное
      */
     public function favorites()
     {
@@ -61,7 +60,6 @@ class User extends Authenticatable
 
     /**
      * Связь "один ко многим" с таблицей оценок
-     * Позволяет получить все оценки, которые поставил пользователь
      */
     public function ratings()
     {
@@ -70,9 +68,6 @@ class User extends Authenticatable
 
     /**
      * Проверяет, добавил ли пользователь игру в избранное
-     *
-     * @param int $gameId ID игры
-     * @return bool true если игра в избранном, false если нет
      */
     public function hasFavorited($gameId)
     {
@@ -85,7 +80,6 @@ class User extends Authenticatable
 
     /**
      * Связь "один ко многим" с таблицей комментариев
-     * Позволяет получить все комментарии пользователя
      */
     public function comments()
     {
@@ -94,7 +88,6 @@ class User extends Authenticatable
 
     /**
      * Связь "один ко многим" с таблицей лайков комментариев
-     * Позволяет получить все лайки пользователя
      */
     public function commentLikes()
     {
@@ -151,5 +144,117 @@ class User extends Authenticatable
             ->each(function ($achievement) {
                 $achievement->pivot->update(['is_new' => false]);
             });
+    }
+
+    // ============================================
+    // ДОБАВЛЕННЫЕ МЕТОДЫ ДЛЯ ДРУЗЕЙ
+    // ============================================
+
+    /**
+     * Отправленные заявки в друзья
+     */
+    public function sentFriendRequests()
+    {
+        return $this->hasMany(Friendship::class, 'user_id');
+    }
+
+    /**
+     * Полученные заявки в друзья
+     */
+    public function receivedFriendRequests()
+    {
+        return $this->hasMany(Friendship::class, 'friend_id')
+                    ->where('status', 'pending');
+    }
+
+    /**
+     * Друзья (принятые заявки) - исправлено для работы с пагинацией
+     */
+    public function friends()
+    {
+        // Получаем ID друзей из обоих направлений
+        $friendIds = $this->sentFriendRequests()
+            ->where('status', 'accepted')
+            ->pluck('friend_id')
+            ->merge(
+                $this->receivedFriendRequests()
+                    ->where('status', 'accepted')
+                    ->pluck('user_id')
+            );
+
+        // Возвращаем query builder для пагинации
+        return User::whereIn('id', $friendIds);
+    }
+
+    /**
+     * Проверить, являются ли пользователи друзьями
+     */
+    public function isFriendWith($userId)
+    {
+        return Friendship::where(function($query) use ($userId) {
+                    $query->where('user_id', $this->id)
+                          ->where('friend_id', $userId);
+                })->orWhere(function($query) use ($userId) {
+                    $query->where('user_id', $userId)
+                          ->where('friend_id', $this->id);
+                })->where('status', 'accepted')->exists();
+    }
+
+    /**
+     * Получить ID всех друзей
+     */
+    public function getFriendsIds()
+    {
+        $ids1 = $this->sentFriendRequests()
+                    ->where('status', 'accepted')
+                    ->pluck('friend_id')
+                    ->toArray();
+
+        $ids2 = $this->receivedFriendRequests()
+                    ->where('status', 'accepted')
+                    ->pluck('user_id')
+                    ->toArray();
+
+        return array_merge($ids1, $ids2);
+    }
+
+    // ============================================
+    // ДОБАВЛЕННЫЕ МЕТОДЫ ДЛЯ АКТИВНОСТИ
+    // ============================================
+
+    /**
+     * Активность пользователя
+     */
+    public function activities()
+    {
+        return $this->hasMany(Activity::class)->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Лента активности друзей
+     */
+    public function friendsActivities($limit = 50)
+    {
+        $friendsIds = $this->getFriendsIds();
+
+        return Activity::whereIn('user_id', $friendsIds)
+                       ->with('user', 'target')
+                       ->orderBy('created_at', 'desc')
+                       ->limit($limit)
+                       ->get();
+    }
+
+    /**
+     * Создать запись активности
+     */
+    public function addActivity($type, $target, $data = null)
+    {
+        return Activity::create([
+            'user_id' => $this->id,
+            'type' => $type,
+            'target_id' => $target->id,
+            'target_type' => get_class($target),
+            'data' => $data
+        ]);
     }
 }
