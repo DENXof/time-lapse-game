@@ -14,6 +14,10 @@ use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GenreController;
 use App\Http\Controllers\Admin\ProfileController as AdminProfileController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\AdminCommentController;
+use App\Http\Controllers\Admin\LogController;
+use App\Http\Controllers\Admin\SettingsController;
 
 // ============================================
 // ПУБЛИЧНЫЕ МАРШРУТЫ (доступны всем)
@@ -105,9 +109,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     // Защищённые маршруты админки
     Route::middleware(['admin'])->group(function () {
+        // Дашборд
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+        // Управление жанрами
         Route::resource('genres', GenreController::class);
 
+        // Управление играми
         Route::prefix('games')->name('games.')->group(function () {
             Route::get('/', [GameController::class, 'adminIndex'])->name('index');
             Route::get('create', [GameController::class, 'create'])->name('create');
@@ -117,6 +125,26 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('{game}', [GameController::class, 'destroy'])->name('destroy');
         });
 
+        // ========= ДОБАВЛЕННЫЕ МАРШРУТЫ ДЛЯ РАСШИРЕННОЙ АДМИН-ПАНЕЛИ =========
+        // Управление пользователями
+        Route::resource('users', UserController::class)->except(['create', 'store']);
+        Route::post('users/{user}/ban', [UserController::class, 'ban'])->name('users.ban');
+        Route::post('users/{user}/unban', [UserController::class, 'unban'])->name('users.unban');
+
+        // Управление комментариями
+        Route::resource('comments', AdminCommentController::class)->only(['index', 'show', 'destroy']);
+        Route::post('comments/{comment}/approve', [AdminCommentController::class, 'approve'])->name('comments.approve');
+        Route::post('comments/{comment}/hide', [AdminCommentController::class, 'hide'])->name('comments.hide');
+
+        // Логи действий
+        Route::get('logs', [LogController::class, 'index'])->name('logs.index');
+
+        // Настройки сайта
+        Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
+        Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
+        // =====================================================================
+
+        // Профиль администратора
         Route::get('profile', [AdminProfileController::class, 'edit'])->name('profile.edit');
         Route::put('profile', [AdminProfileController::class, 'update'])->name('profile.update');
         Route::put('profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password.update');
