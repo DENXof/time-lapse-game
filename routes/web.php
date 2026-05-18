@@ -150,3 +150,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password.update');
     });
 });
+// ТЕСТОВЫЙ МАРШРУТ ДЛЯ DISCORD (удалить после проверки)
+Route::get('/test-discord', function () {
+    $discord = new \App\Services\DiscordService();
+
+    $result = $discord->send([
+        'title' => '🎉 Тест Discord Webhook',
+        'description' => 'Если вы видите это сообщение, всё работает правильно!',
+        'color' => 0x3498db,
+    ]);
+
+    return $result ? '✅ Сообщение отправлено в Discord!' : '❌ Ошибка отправки. Проверьте логи.';
+});

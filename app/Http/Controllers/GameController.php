@@ -4,12 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Game;
 use App\Models\Genre;
+use App\Traits\SeoTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class GameController extends Controller
 {
+    use SeoTrait;
+
     // ============================================
     // ПУБЛИЧНЫЕ МЕТОДЫ (доступны всем посетителям сайта)
     // ============================================
@@ -71,6 +74,13 @@ class GameController extends Controller
         $games = $query->paginate(12)->withQueryString();
         $genres = Genre::orderBy('name')->get();
 
+        // SEO мета-теги
+        $this->setMeta(
+            title: 'Все игры - TimeLapse Games',
+            description: 'Полный каталог компьютерных игр. Поиск по жанрам, годам, платформам. Удобная фильтрация и сортировка.',
+            keywords: 'каталог игр, компьютерные игры, видеоигры, поиск игр'
+        );
+
         return view('games.index', compact('games', 'genres'));
     }
 
@@ -89,6 +99,14 @@ class GameController extends Controller
             ->take(3)
             ->get();
 
+        // SEO мета-теги для игры
+        $this->setMeta(
+            title: $game->title . ' - TimeLapse Games',
+            description: Str::limit(strip_tags($game->description), 160),
+            keywords: $game->title . ', ' . ($game->genre->name ?? 'игра') . ', ' . $game->release_year . ', ' . $game->developer,
+            image: $game->cover_image ? Storage::url($game->cover_image) : null
+        );
+
         return view('games.show', compact('game', 'relatedGames'));
     }
 
@@ -105,6 +123,13 @@ class GameController extends Controller
             ->orderBy('rating_count', 'desc')
             ->paginate(20);
 
+        // SEO мета-теги
+        $this->setMeta(
+            title: 'Топ-100 игр - TimeLapse Games',
+            description: 'Самые высокооценённые игры по версии пользователей. Топ-100 лучших игр всех времён. Рейтинги, обзоры, оценки.',
+            keywords: 'топ игр, лучшие игры, рейтинг игр, топ 100 игр'
+        );
+
         return view('games.top', compact('games'));
     }
 
@@ -120,6 +145,13 @@ class GameController extends Controller
             ->where('release_year', '>=', $twoYearsAgo)
             ->orderBy('release_year', 'desc')
             ->paginate(20);
+
+        // SEO мета-теги
+        $this->setMeta(
+            title: 'Новинки - TimeLapse Games',
+            description: 'Самые свежие релизы игр за последние 2 года. Будьте в курсе новинок игровой индустрии!',
+            keywords: 'новые игры, новинки игр, релизы игр, свежие игры'
+        );
 
         return view('games.new', compact('games'));
     }
@@ -153,6 +185,13 @@ class GameController extends Controller
 
         // Сортируем десятилетия по убыванию
         $decades = $gamesByDecade->keys()->sortDesc();
+
+        // SEO мета-теги
+        $this->setMeta(
+            title: 'Календарь релизов игр - TimeLapse Games',
+            description: 'Хронология выхода игр по годам и десятилетиям. Узнайте, когда вышли ваши любимые игры!',
+            keywords: 'календарь релизов, хронология игр, история игр, когда вышли игры'
+        );
 
         return view('games.calendar', compact('gamesByDecade', 'decades'));
     }

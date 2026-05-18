@@ -5,11 +5,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'TimeLapse Games')</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    {{-- SEO мета-теги --}}
+    <title>@yield('title', config('app.name', 'TimeLapse Games'))</title>
+    <meta name="description" content="@yield('meta_description', 'История компьютерных игр: от ретро до современности. Описание игр, рейтинги, обзоры и обсуждения.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'игры, видеоигры, история игр, ретро игры, игровая индустрия')">
+    <meta name="author" content="TimeLapse Games">
+    <meta name="robots" content="index, follow">
+
+    {{-- Canonical URL (предотвращает дублирование) --}}
+    <link rel="canonical" href="@yield('canonical_url', url()->current())">
+
+    {{-- Open Graph (для Facebook, VK, Telegram) --}}
+    <meta property="og:title" content="@yield('og_title', config('app.name'))">
+    <meta property="og:description" content="@yield('og_description', 'История компьютерных игр в одном месте')">
+    <meta property="og:image" content="@yield('og_image', asset('images/og-image.jpg'))">
+    <meta property="og:url" content="@yield('og_url', url()->current())">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="TimeLapse Games">
+    <meta property="og:locale" content="ru_RU">
+
+    {{-- Twitter Cards --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('og_title', config('app.name'))">
+    <meta name="twitter:description" content="@yield('og_description', 'История компьютерных игр в одном месте')">
+    <meta name="twitter:image" content="@yield('og_image', asset('images/og-image.jpg'))">
+
+    {{-- Favicon и иконки --}}
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v={{ time() }}">
 
     <style>
         body {
@@ -101,6 +129,11 @@
             width: 80px;
             height: 80px;
             object-fit: cover;
+        }
+
+        /* Ленивая загрузка изображений */
+        img[loading="lazy"] {
+            background-color: #f0f0f0;
         }
     </style>
 
@@ -281,7 +314,10 @@
         </div>
     </footer>
 
+    <!-- ========= ДОБАВЛЕН JQUERY ========= -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ================================= -->
 
     <!-- ========= УВЕДОМЛЕНИЯ О ДОСТИЖЕНИЯХ ========= -->
     @if(session('new_achievements'))

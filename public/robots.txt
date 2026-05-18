@@ -1,2 +1,15 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin/
+Disallow: /profile/
+Disallow: /favorites/
+Disallow: /comments/
+Disallow: /activity/
+
+Sitemap: {{ url('/sitemap.xml') }}
+
+# Задержка между запросами
+Crawl-delay: 10
+
+# Хост
+Host: {{ url('/') }}

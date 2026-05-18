@@ -1,170 +1,73 @@
-<?php
+@extends('layouts.app')
 
-namespace App\Http\Controllers;
+@section('title', $game->title . ' - TimeLapse Games')
 
-use App\Models\Comment;
-use App\Models\CommentLike;
-use App\Models\Game;
-use App\Services\AchievementService;
-use App\Services\ActivityService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+@section('content')
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h1>{{ $game->title }}</h1>
 
-class CommentController extends Controller
-{
-    // Получить комментарии для игры (AJAX)
-    public function index(Game $game)
-    {
-        $comments = $game->comments()
-            ->whereNull('parent_id')
-            ->with(['user', 'replies.user', 'replies.likes'])
-            ->latest()
-            ->paginate(10);
+                    <div class="mb-3">
+                        <span class="badge bg-primary">{{ $game->genre->name ?? 'Без жанра' }}</span>
+                        <span class="badge bg-secondary">{{ $game->release_year }} год</span>
+                        <span class="badge bg-info">{{ $game->views_count ?? 0 }} просмотров</span>
+                        <span class="badge bg-warning text-dark">
+                            @if($game->rating_count > 0)
+                                {{ number_format($game->rating_avg, 1) }} ({{ $game->rating_count }})
+                            @else
+                                Нет оценок
+                            @endif
+                        </span>
+                    </div>
 
-        return response()->json($comments);
-    }
+                    @auth
+                        <form action="{{ route('favorites.toggle', $game) }}" method="POST" class="d-inline-block mb-3">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-danger">
+                                {{ Auth::user()->hasFavorited($game->id) ? '❤️ В избранном' : '🤍 В избранное' }}
+                            </button>
+                        </form>
+                    @endauth
 
-    // Добавить комментарий
-    public function store(Request $request, Game $game)
-    {
-        $request->validate([
-            'content' => 'required|string|min:2|max:1000',
-            'parent_id' => 'nullable|exists:comments,id'
-        ]);
+                    <div class="mt-4">
+                        <h5>Разработчик</h5>
+                        <p>{{ $game->developer }}</p>
+                        <h5>Платформа</h5>
+                        <p>{{ $game->platform }}</p>
+                    </div>
+                </div>
+            </div>
 
-        $comment = Comment::create([
-            'user_id' => Auth::id(),
-            'game_id' => $game->id,
-            'parent_id' => $request->parent_id,
-            'content' => $request->content,
-        ]);
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h3>Описание</h3>
+                </div>
+                <div class="card-body">
+                    <p>{{ $game->description }}</p>
+                </div>
+            </div>
+        </div>
 
-        // ========= ЛОГИРОВАНИЕ АКТИВНОСТИ =========
-        ActivityService::log('comment', $comment);
-        // ==========================================
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h4>Похожие игры</h4>
+                </div>
+                <div class="card-body">
+                    @foreach($relatedGames as $relatedGame)
+                        <div class="mb-2">
+                            <a href="{{ route('games.show', $relatedGame->slug) }}">{{ $relatedGame->title }}</a>
+                            <small class="text-muted">({{ $relatedGame->release_year }})</small>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // ========= ПРОВЕРКА ДОСТИЖЕНИЙ =========
-        $achievementService = new AchievementService();
-        $newAchievements = $achievementService->checkAndAward(Auth::user(), 'comment');
-
-        if (!empty($newAchievements)) {
-            session()->flash('new_achievements', $newAchievements);
-        }
-        // =======================================
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'comment' => $comment->load('user', 'replies')
-            ]);
-        }
-
-        return back()->with('success', 'Комментарий добавлен!');
-    }
-
-    // Обновить комментарий
-    public function update(Request $request, Comment $comment)
-    {
-        if (Auth::id() !== $comment->user_id && !Auth::user()->isAdmin()) {
-            abort(403);
-        }
-
-        $request->validate([
-            'content' => 'required|string|min:2|max:1000'
-        ]);
-
-        $comment->update(['content' => $request->content]);
-
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'comment' => $comment]);
-        }
-
-        return back()->with('success', 'Комментарий обновлён!');
-    }
-
-    // Удалить комментарий
-    public function destroy(Comment $comment)
-    {
-        if (Auth::id() !== $comment->user_id && !Auth::user()->isAdmin()) {
-            abort(403);
-        }
-
-        $comment->delete();
-
-        if (request()->ajax()) {
-            return response()->json(['success' => true]);
-        }
-
-        return back()->with('success', 'Комментарий удалён!');
-    }
-
-    // Лайкнуть комментарий
-    public function like(Comment $comment)
-    {
-        $user = Auth::user();
-
-        $existingLike = CommentLike::where('user_id', $user->id)
-            ->where('comment_id', $comment->id)
-            ->first();
-
-        if ($existingLike) {
-            $existingLike->delete();
-            $comment->decrementLikesCount();
-            $liked = false;
-        } else {
-            CommentLike::create([
-                'user_id' => $user->id,
-                'comment_id' => $comment->id
-            ]);
-            $comment->incrementLikesCount();
-            $liked = true;
-        }
-
-        // ========= ПРОВЕРКА ДОСТИЖЕНИЙ ДЛЯ АВТОРА КОММЕНТАРИЯ =========
-        $achievementService = new AchievementService();
-        $newAchievements = $achievementService->checkAndAward($comment->user, 'likes');
-
-        if (!empty($newAchievements)) {
-            session()->flash('new_achievements', $newAchievements);
-        }
-        // =============================================================
-
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'liked' => $liked,
-                'likes_count' => $comment->fresh()->likes_count
-            ]);
-        }
-
-        return back();
-    }
-
-    // Ответить на комментарий
-    public function reply(Request $request, Comment $comment)
-    {
-        $request->validate([
-            'content' => 'required|string|min:2|max:1000'
-        ]);
-
-        $reply = Comment::create([
-            'user_id' => Auth::id(),
-            'game_id' => $comment->game_id,
-            'parent_id' => $comment->id,
-            'content' => $request->content,
-        ]);
-
-        // ========= ЛОГИРОВАНИЕ АКТИВНОСТИ ДЛЯ ОТВЕТА =========
-        ActivityService::log('comment', $reply);
-        // =====================================================
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'reply' => $reply->load('user')
-            ]);
-        }
-
-        return back()->with('success', 'Ответ добавлен!');
-    }
-}
+    <a href="{{ route('games.index') }}" class="btn btn-secondary">← Вернуться к списку игр</a>
+</div>
+@endsection
