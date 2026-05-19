@@ -123,6 +123,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('{game}/edit', [GameController::class, 'edit'])->name('edit');
             Route::put('{game}', [GameController::class, 'update'])->name('update');
             Route::delete('{game}', [GameController::class, 'destroy'])->name('destroy');
+            // ========= ДОБАВЛЕННЫЙ МАРШРУТ =========
+            Route::get('update-prices', [GameController::class, 'updatePrices'])->name('update-prices');
         });
 
         // ========= ДОБАВЛЕННЫЕ МАРШРУТЫ ДЛЯ РАСШИРЕННОЙ АДМИН-ПАНЕЛИ =========
@@ -150,6 +152,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password.update');
     });
 });
+
 // ТЕСТОВЫЙ МАРШРУТ ДЛЯ DISCORD (удалить после проверки)
 Route::get('/test-discord', function () {
     $discord = new \App\Services\DiscordService();

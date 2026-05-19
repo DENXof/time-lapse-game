@@ -22,7 +22,9 @@ class Game extends Model
         'genre_id',
         'views_count',
         'rating_avg',
-        'rating_count'  // Добавлены поля для рейтинга
+        'rating_count',
+        'steam_app_id',
+        'manual_price'
     ];
 
     protected $appends = ['era_style', 'decade'];
@@ -54,7 +56,6 @@ class Game extends Model
         return $this->belongsToMany(User::class, 'favorites');
     }
 
-    // Связь с комментариями (ДОБАВЛЕНО)
     public function comments()
     {
         return $this->hasMany(Comment::class);
@@ -89,9 +90,6 @@ class Game extends Model
         return $this->ratings()->where('user_id', $user->id)->first();
     }
 
-    /**
-     * Обновляет средний рейтинг игры на основе всех оценок
-     */
     public function updateRating()
     {
         $this->rating_avg = $this->ratings()->avg('value') ?? 0;
@@ -99,9 +97,6 @@ class Game extends Model
         $this->save();
     }
 
-    /**
-     * Проверяет, добавил ли пользователь игру в избранное
-     */
     public function isFavoritedBy(User $user = null)
     {
         if (!$user)

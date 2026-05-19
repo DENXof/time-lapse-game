@@ -75,7 +75,28 @@
                 </div>
             </div>
 
-            {{-- УПРОЩЁННЫЕ КОММЕНТАРИИ (без сложных скриптов) --}}
+            {{-- ТРЕЙЛЕР С YOUTUBE --}}
+            @if(isset($trailer) && $trailer)
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h3 class="mb-0">
+                            <i class="fab fa-youtube text-danger me-2"></i>
+                            Трейлер
+                        </h3>
+                    </div>
+                    <div class="card-body p-0 ratio ratio-16x9">
+                        <iframe
+                            src="{{ $trailer['embed_url'] }}"
+                            title="{{ $trailer['title'] }}"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            @endif
+
+            {{-- КОММЕНТАРИИ --}}
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-light">
                     <h3>Комментарии ({{ $game->comments()->count() }})</h3>
@@ -132,6 +153,26 @@
                     </ul>
                 </div>
             </div>
+
+            {{-- ЦЕНА В STEAM --}}
+            @if(isset($steamPrice) && $steamPrice)
+                <div class="card shadow-sm mt-4">
+                    <div class="card-header bg-light">
+                        <h4 class="mb-0">
+                            <i class="fab fa-steam text-info me-2"></i>
+                            Цена в Steam
+                        </h4>
+                    </div>
+                    <div class="card-body text-center">
+                        <h3 class="text-success">{{ $steamPrice }}</h3>
+                        <a href="https://store.steampowered.com/search?term={{ urlencode($game->title) }}"
+                           class="btn btn-sm btn-outline-info mt-2"
+                           target="_blank">
+                            <i class="fab fa-steam me-2"></i>Купить в Steam
+                        </a>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 

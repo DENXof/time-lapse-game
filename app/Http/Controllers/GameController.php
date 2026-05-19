@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Game;
 use App\Models\Genre;
 use App\Traits\SeoTrait;
+use App\Services\YouTubeService;
+use App\Services\SteamService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -14,38 +16,32 @@ class GameController extends Controller
     use SeoTrait;
 
     // ============================================
-    // ПУБЛИЧНЫЕ МЕТОДЫ (доступны всем посетителям сайта)
+    // ПУБЛИЧНЫЕ МЕТОДЫ
     // ============================================
 
-    // ПОКАЗАТЬ ВСЕ ИГРЫ (С ФИЛЬТРАЦИЕЙ, ПОИСКОМ И СОРТИРОВКОЙ)
     public function index(Request $request)
     {
         $query = Game::with('genre');
 
-        // ПОИСК ПО НАЗВАНИЮ
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where('title', 'like', '%' . $search . '%');
         }
 
-        // ФИЛЬТР ПО ЖАНРУ
         if ($request->filled('genre')) {
             $query->where('genre_id', $request->genre);
         }
 
-        // ФИЛЬТР ПО ДЕСЯТИЛЕТИЮ
         if ($request->filled('decade')) {
             $startYear = $request->decade;
             $endYear = $startYear + 9;
             $query->whereBetween('release_year', [$startYear, $endYear]);
         }
 
-        // ФИЛЬТР ПО ПЛАТФОРМЕ
         if ($request->filled('platform')) {
             $query->where('platform', 'like', '%' . $request->platform . '%');
         }
 
-        // СОРТИРОВКА
         $sort = $request->get('sort', 'newest');
 
         switch ($sort) {
@@ -74,10 +70,9 @@ class GameController extends Controller
         $games = $query->paginate(12)->withQueryString();
         $genres = Genre::orderBy('name')->get();
 
-        // SEO мета-теги
         $this->setMeta(
             title: 'Все игры - TimeLapse Games',
-            description: 'Полный каталог компьютерных игр. Поиск по жанрам, годам, платформам. Удобная фильтрация и сортировка.',
+            description: 'Полный каталог компьютерных игр. Поиск по жанрам, годам, платформам.',
             keywords: 'каталог игр, компьютерные игры, видеоигры, поиск игр'
         );
 
@@ -99,43 +94,56 @@ class GameController extends Controller
             ->take(3)
             ->get();
 
-        // SEO мета-теги для игры
+        // YouTube трейлер
+        try {
+            $youtubeService = new YouTubeService();
+            $trailer = $youtubeService->searchTrailer($game->title, $game->release_year);
+        } catch (\Exception $e) {
+            $trailer = null;
+        }
+
+        // Steam цена (приоритет: ручная цена > Steam API)
+        $steamPrice = null;
+        if ($game->manual_price) {
+            $steamPrice = $game->manual_price;
+        } elseif ($game->steam_app_id && $game->steam_app_id !== 'steam_app_id = 292030') {
+            try {
+                $steamService = new SteamService();
+                $steamPrice = $steamService->getPrice($game->steam_app_id);
+            } catch (\Exception $e) {
+                $steamPrice = null;
+            }
+        }
+
         $this->setMeta(
             title: $game->title . ' - TimeLapse Games',
             description: Str::limit(strip_tags($game->description), 160),
-            keywords: $game->title . ', ' . ($game->genre->name ?? 'игра') . ', ' . $game->release_year . ', ' . $game->developer,
+            keywords: $game->title . ', ' . ($game->genre->name ?? 'игра') . ', ' . $game->release_year,
             image: $game->cover_image ? Storage::url($game->cover_image) : null
         );
 
-        return view('games.show', compact('game', 'relatedGames'));
+        return view('games.show', compact('game', 'relatedGames', 'trailer', 'steamPrice'));
     }
 
-    // ========= ДОБАВЛЕННЫЕ МЕТОДЫ ДЛЯ ЭТАПА 4 =========
+    // ========= ДОБАВЛЕННЫЕ МЕТОДЫ =========
 
-    /**
-     * ТОП-100 игр (по рейтингу)
-     */
     public function top()
     {
         $games = Game::with('genre')
-            ->where('rating_count', '>', 0)  // Только игры с оценками
+            ->where('rating_count', '>', 0)
             ->orderBy('rating_avg', 'desc')
             ->orderBy('rating_count', 'desc')
             ->paginate(20);
 
-        // SEO мета-теги
         $this->setMeta(
             title: 'Топ-100 игр - TimeLapse Games',
-            description: 'Самые высокооценённые игры по версии пользователей. Топ-100 лучших игр всех времён. Рейтинги, обзоры, оценки.',
-            keywords: 'топ игр, лучшие игры, рейтинг игр, топ 100 игр'
+            description: 'Самые высокооценённые игры по версии пользователей.',
+            keywords: 'топ игр, лучшие игры, рейтинг игр'
         );
 
         return view('games.top', compact('games'));
     }
 
-    /**
-     * НОВИНКИ (игры последних 2 лет)
-     */
     public function newReleases()
     {
         $currentYear = date('Y');
@@ -146,19 +154,15 @@ class GameController extends Controller
             ->orderBy('release_year', 'desc')
             ->paginate(20);
 
-        // SEO мета-теги
         $this->setMeta(
             title: 'Новинки - TimeLapse Games',
-            description: 'Самые свежие релизы игр за последние 2 года. Будьте в курсе новинок игровой индустрии!',
-            keywords: 'новые игры, новинки игр, релизы игр, свежие игры'
+            description: 'Самые свежие релизы игр за последние 2 года.',
+            keywords: 'новые игры, новинки игр, релизы игр'
         );
 
         return view('games.new', compact('games'));
     }
 
-    /**
-     * СЛУЧАЙНАЯ ИГРА
-     */
     public function randomGame()
     {
         $game = Game::inRandomOrder()->first();
@@ -170,12 +174,8 @@ class GameController extends Controller
         return redirect()->route('games.show', $game->slug);
     }
 
-    /**
-     * КАЛЕНДАРЬ РЕЛИЗОВ (группировка по десятилетиям)
-     */
     public function calendar()
     {
-        // Получаем все игры, сгруппированные по десятилетиям
         $gamesByDecade = Game::with('genre')
             ->orderBy('release_year', 'desc')
             ->get()
@@ -183,107 +183,88 @@ class GameController extends Controller
                 return floor($game->release_year / 10) * 10;
             });
 
-        // Сортируем десятилетия по убыванию
         $decades = $gamesByDecade->keys()->sortDesc();
 
-        // SEO мета-теги
         $this->setMeta(
             title: 'Календарь релизов игр - TimeLapse Games',
-            description: 'Хронология выхода игр по годам и десятилетиям. Узнайте, когда вышли ваши любимые игры!',
-            keywords: 'календарь релизов, хронология игр, история игр, когда вышли игры'
+            description: 'Хронология выхода игр по годам и десятилетиям.',
+            keywords: 'календарь релизов, хронология игр, история игр'
         );
 
         return view('games.calendar', compact('gamesByDecade', 'decades'));
     }
 
     // ============================================
-    // АДМИНСКИЕ МЕТОДЫ (только для админов)
+    // АДМИНСКИЕ МЕТОДЫ
     // ============================================
 
-    // СПИСОК ИГР С ПОИСКОМ
     public function adminIndex(Request $request)
     {
-        // Начинаем запрос к БД, сразу подгружаем жанры
         $query = Game::with('genre');
-        // ЕСЛИ ЕСТЬ ПОИСК (пользователь ввел текст в поиск)
+
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            // Ищем игры, где название похоже на то, что ввел пользователь
-            // LIKE "%текст%" - ищем везде, где встречается этот текст
             $query->where('title', 'LIKE', "%{$search}%");
         }
-        // ЕСЛИ ЕСТЬ ФИЛЬТР ПО ГОДУ
+
         if ($request->has('year') && $request->year != '') {
-            // Показываем игры только этого года
             $query->where('release_year', $request->year);
         }
-        // Получаем результат
-        $games = $query->orderBy('created_at', 'desc')  // Сортируем по дате добавления
-            ->paginate(15); // По 15 игр на странице
-        // Сохраняем параметры поиска в пагинации (чтобы при переходе на стр.2 поиск не сбрасывался)
+
+        $games = $query->orderBy('created_at', 'desc')->paginate(15);
+
         if ($request->has('search') || $request->has('year')) {
             $games->appends($request->all());
         }
-        // Отправляем в шаблон admin/games/index.blade.php
+
         return view('admin.games.index', compact('games'));
     }
 
-    // ФОРМА ДОБАВЛЕНИЯ НОВОЙ ИГРЫ
     public function create()
     {
-        // Получаем все жанры для выпадающего списка
         $genres = Genre::all();
-        // Показываем форму создания игры
         return view('admin.games.create', compact('genres'));
     }
 
-    // СОХРАНИТЬ НОВУЮ ИГРУ
     public function store(Request $request)
     {
-        // ПРОВЕРЯЕМ, ЧТО ПОЛЯ ЗАПОЛНЕНЫ ПРАВИЛЬНО
         $validated = $request->validate([
-            'title' => 'required|string|max:255|unique:games',  // Название: обязательно, строка, макс 255 символов, уникальное
-            'description' => 'required|string', // Описание: обязательно
-            'genre_id' => 'required|exists:genres,id',  // Жанр: обязательно, должен быть в таблице genres
-            'release_year' => 'required|integer|min:1900|max:' . (date('Y') + 5), // Год: от 1900 до текущий год+5
-            'developer' => 'required|string|max:255',   // Разработчик: обязательно
-            'publisher' => 'nullable|string|max:255',   // Издатель: необязательно
-            'platform' => 'required|string|max:255',    // Платформа: обязательно
-            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',  // Обложка: картинка до 2MB
+            'title' => 'required|string|max:255|unique:games',
+            'description' => 'required|string',
+            'genre_id' => 'required|exists:genres,id',
+            'release_year' => 'required|integer|min:1900|max:' . (date('Y') + 5),
+            'developer' => 'required|string|max:255',
+            'publisher' => 'nullable|string|max:255',
+            'platform' => 'required|string|max:255',
+            'steam_app_id' => 'nullable|string|max:50',
+            'manual_price' => 'nullable|string|max:50',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-        // СОЗДАЕМ SLUG ИЗ НАЗВАНИЯ
+
         $validated['slug'] = Str::slug($validated['title']);
-        // ЕСЛИ ЗАГРУЗИЛИ КАРТИНКУ
+
         if ($request->hasFile('cover_image')) {
-            // Сохраняем картинку в папку public/covers
             $path = $request->file('cover_image')->store('covers', 'public');
-            // Добавляем путь к картинке в данные для сохранения
             $validated['cover_image'] = $path;
         }
-        // СОЗДАЕМ НОВУЮ ЗАПИСЬ В ТАБЛИЦЕ games
+
         Game::create($validated);
-        // Перенаправляем обратно в админку с сообщением об успехе
+
         return redirect()->route('admin.games.index')
             ->with('success', 'Игра успешно добавлена!');
     }
 
-    // ФОРМА РЕДАКТИРОВАНИЯ ИГРЫ
     public function edit($id)
     {
-        // Ищем игру по ID, если нет - 404
         $game = Game::findOrFail($id);
-        // Получаем все жанры для выпадающего списка
         $genres = Genre::all();
-        // Показываем форму редактирования
         return view('admin.games.edit', compact('game', 'genres'));
     }
 
-    // ОБНОВИТЬ ИГРУ
     public function update(Request $request, $id)
     {
-        // Ищем игру по ID
         $game = Game::findOrFail($id);
-        // ПРОВЕРЯЕМ ДАННЫЕ (уникальность названия - исключая эту игру)
+
         $validated = $request->validate([
             'title' => 'required|string|max:255|unique:games,title,' . $game->id,
             'description' => 'required|string',
@@ -292,42 +273,61 @@ class GameController extends Controller
             'developer' => 'required|string|max:255',
             'publisher' => 'nullable|string|max:255',
             'platform' => 'required|string|max:255',
+            'steam_app_id' => 'nullable|string|max:50',
+            'manual_price' => 'nullable|string|max:50',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-        // ЕСЛИ НАЗВАНИЕ ИЗМЕНИЛОСЬ - ОБНОВЛЯЕМ SLUG
+
         if ($game->title !== $validated['title']) {
             $validated['slug'] = Str::slug($validated['title']);
         }
-        // ЕСЛИ ЗАГРУЗИЛИ НОВУЮ ОБЛОЖКУ
+
         if ($request->hasFile('cover_image')) {
-            // Удаляем старую обложку, если она была
             if ($game->cover_image) {
                 Storage::disk('public')->delete($game->cover_image);
             }
-            // Сохраняем новую
             $path = $request->file('cover_image')->store('covers', 'public');
             $validated['cover_image'] = $path;
         }
-        // ОБНОВЛЯЕМ ДАННЫЕ В БАЗЕ
+
+        if ($request->has('remove_cover') && $request->remove_cover == 1) {
+            if ($game->cover_image) {
+                Storage::disk('public')->delete($game->cover_image);
+            }
+            $validated['cover_image'] = null;
+        }
+
         $game->update($validated);
-        // Перенаправляем в админку с сообщением
+
         return redirect()->route('admin.games.index')
             ->with('success', 'Игра успешно обновлена!');
     }
 
-    // УДАЛИТЬ ИГРУ
     public function destroy($id)
     {
-        // Ищем игру по ID
         $game = Game::findOrFail($id);
-        // ЕСЛИ У ИГРЫ БЫЛА ОБЛОЖКА - УДАЛЯЕМ ФАЙЛ
+
         if ($game->cover_image) {
             Storage::disk('public')->delete($game->cover_image);
         }
-        // УДАЛЯЕМ ЗАПИСЬ ИЗ БАЗЫ
+
         $game->delete();
-        // Перенаправляем в админку с сообщением
+
         return redirect()->route('admin.games.index')
             ->with('success', 'Игра успешно удалена!');
+    }
+
+    // ========= ДОБАВЛЕННЫЙ МЕТОД ДЛЯ ОБНОВЛЕНИЯ ЦЕН =========
+    /**
+     * Ручное обновление цен из Steam
+     * Маршрут защищён middleware 'admin'
+     */
+    public function updatePrices()
+    {
+        // Запускаем команду для обновления цен
+        \Artisan::call('steam:update-prices', ['--force' => true]);
+
+        return redirect()->route('admin.games.index')
+            ->with('success', 'Запущено обновление цен из Steam. Проверьте логи через минуту.');
     }
 }
