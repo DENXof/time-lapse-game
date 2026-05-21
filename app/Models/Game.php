@@ -24,7 +24,12 @@ class Game extends Model
         'rating_avg',
         'rating_count',
         'steam_app_id',
-        'manual_price'
+        'manual_price',
+        'prices'
+    ];
+
+    protected $casts = [
+        'prices' => 'array',
     ];
 
     protected $appends = ['era_style', 'decade'];
@@ -102,5 +107,45 @@ class Game extends Model
         if (!$user)
             return false;
         return $this->favoritedBy()->where('user_id', $user->id)->exists();
+    }
+
+    // ========= МЕТОДЫ ДЛЯ ЦЕН =========
+    public function getPrice($currency = null)
+    {
+        $currency = $currency ?? session('currency', 'RUB');
+        $prices = $this->prices ?? [];
+
+        if (isset($prices[$currency])) {
+            // Очищаем цену от символов валюты
+            $price = $prices[$currency];
+            $cleanedPrice = preg_replace('/[^0-9.,]/', '', $price);
+            return !empty($cleanedPrice) ? $cleanedPrice : $price;
+        }
+
+        if ($this->manual_price) {
+            $cleanedPrice = preg_replace('/[^0-9.,]/', '', $this->manual_price);
+            return !empty($cleanedPrice) ? $cleanedPrice : $this->manual_price;
+        }
+
+        return null;
+    }
+
+    public static function getCurrencySymbol($currency)
+    {
+        return match ($currency) {
+            'RUB' => '₽',
+            'USD' => '$',
+            'EUR' => '€',
+            default => $currency,
+        };
+    }
+
+    public static function getCurrencies()
+    {
+        return [
+            'RUB' => ['name' => 'Российский рубль', 'symbol' => '₽'],
+            'USD' => ['name' => 'Доллар США', 'symbol' => '$'],
+            'EUR' => ['name' => 'Евро', 'symbol' => '€'],
+        ];
     }
 }

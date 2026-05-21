@@ -7,17 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- SEO мета-теги --}}
     <title>@yield('title', config('app.name', 'TimeLapse Games'))</title>
     <meta name="description" content="@yield('meta_description', 'История компьютерных игр: от ретро до современности. Описание игр, рейтинги, обзоры и обсуждения.')">
     <meta name="keywords" content="@yield('meta_keywords', 'игры, видеоигры, история игр, ретро игры, игровая индустрия')">
     <meta name="author" content="TimeLapse Games">
     <meta name="robots" content="index, follow">
 
-    {{-- Canonical URL (предотвращает дублирование) --}}
     <link rel="canonical" href="@yield('canonical_url', url()->current())">
 
-    {{-- Open Graph (для Facebook, VK, Telegram) --}}
     <meta property="og:title" content="@yield('og_title', config('app.name'))">
     <meta property="og:description" content="@yield('og_description', 'История компьютерных игр в одном месте')">
     <meta property="og:image" content="@yield('og_image', asset('images/og-image.jpg'))">
@@ -26,13 +23,11 @@
     <meta property="og:site_name" content="TimeLapse Games">
     <meta property="og:locale" content="ru_RU">
 
-    {{-- Twitter Cards --}}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('og_title', config('app.name'))">
     <meta name="twitter:description" content="@yield('og_description', 'История компьютерных игр в одном месте')">
     <meta name="twitter:image" content="@yield('og_image', asset('images/og-image.jpg'))">
 
-    {{-- Favicon и иконки --}}
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
 
@@ -107,12 +102,10 @@
             margin-bottom: 30px;
         }
 
-        /* Стили для тостов */
         .toast-container {
             z-index: 1100;
         }
 
-        /* Стили для аватаров в комментариях */
         .avatar-sm {
             width: 32px;
             height: 32px;
@@ -131,7 +124,6 @@
             object-fit: cover;
         }
 
-        /* Ленивая загрузка изображений */
         img[loading="lazy"] {
             background-color: #f0f0f0;
         }
@@ -158,7 +150,6 @@
                         </a>
                     </li>
 
-                    <!-- ПУНКТ "ИГРЫ" С ВЫПАДАЮЩИМ МЕНЮ -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {{ Request::is('games*') ? 'active' : '' }}"
                            href="#" id="gamesDropdown" role="button" data-bs-toggle="dropdown">
@@ -188,7 +179,23 @@
                     </li>
                 </ul>
 
-                <!-- БЫСТРЫЙ ПОИСК В ШАПКЕ -->
+                {{-- ВЫБОР ВАЛЮТЫ --}}
+                <div class="dropdown me-2">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        @php
+                            $symbols = ['RUB' => '₽', 'USD' => '$', 'EUR' => '€'];
+                            $current = session('currency', 'RUB');
+                        @endphp
+                        {{ $symbols[$current] ?? '₽' }} {{ $current }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ route('currency.switch', 'RUB') }}">🇷🇺 RUB (₽)</a></li>
+                        <li><a class="dropdown-item" href="{{ route('currency.switch', 'USD') }}">🇺🇸 USD ($)</a></li>
+                        <li><a class="dropdown-item" href="{{ route('currency.switch', 'EUR') }}">🇪🇺 EUR (€)</a></li>
+                    </ul>
+                </div>
+
+                {{-- БЫСТРЫЙ ПОИСК --}}
                 <form action="{{ route('games.index') }}" method="GET" class="d-flex me-3">
                     <input type="text" name="search" class="form-control form-control-sm"
                            placeholder="Поиск игр..." value="{{ request('search') }}"
@@ -198,7 +205,7 @@
                     </button>
                 </form>
 
-                <!-- БЛОК АВТОРИЗАЦИИ -->
+                {{-- БЛОК АВТОРИЗАЦИИ --}}
                 @auth
                     <li class="nav-item dropdown" style="list-style: none;">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
@@ -208,53 +215,18 @@
                             @endif
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item" href="{{ route('profile.index') }}">
-                                    <i class="fas fa-user me-2"></i> Мой профиль
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('favorites.index') }}">
-                                    <i class="fas fa-heart text-danger me-2"></i> Избранное
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('profile.ratings') }}">
-                                    <i class="fas fa-star text-warning me-2"></i> Мои оценки
-                                </a>
-                            </li>
-                            <!-- ========= СОЦИАЛЬНЫЕ ФУНКЦИИ ========= -->
-                            <li>
-                                <a class="dropdown-item" href="{{ route('friends.index') }}">
-                                    <i class="fas fa-users me-2"></i> Мои друзья
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('activity.feed') }}">
-                                    <i class="fas fa-rss me-2"></i> Лента активности
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('activity.my') }}">
-                                    <i class="fas fa-history me-2"></i> Моя активность
-                                </a>
-                            </li>
-                            <!-- ===================================== -->
-                            <li>
-                                <a class="dropdown-item" href="{{ route('achievements.index') }}">
-                                    <i class="fas fa-trophy text-warning me-2"></i> Достижения
-                                    @if(Auth::user()->new_achievements->count() > 0)
-                                        <span class="badge bg-danger float-end">{{ Auth::user()->new_achievements->count() }}</span>
-                                    @endif
-                                </a>
-                            </li>
+                            <li><a class="dropdown-item" href="{{ route('profile.index') }}"><i class="fas fa-user me-2"></i> Мой профиль</a></li>
+                            <li><a class="dropdown-item" href="{{ route('favorites.index') }}"><i class="fas fa-heart text-danger me-2"></i> Избранное</a></li>
+                            <li><a class="dropdown-item" href="{{ route('profile.ratings') }}"><i class="fas fa-star text-warning me-2"></i> Мои оценки</a></li>
+                            <li><a class="dropdown-item" href="{{ route('friends.index') }}"><i class="fas fa-users me-2"></i> Мои друзья</a></li>
+                            <li><a class="dropdown-item" href="{{ route('activity.feed') }}"><i class="fas fa-rss me-2"></i> Лента активности</a></li>
+                            <li><a class="dropdown-item" href="{{ route('activity.my') }}"><i class="fas fa-history me-2"></i> Моя активность</a></li>
+                            <li><a class="dropdown-item" href="{{ route('achievements.index') }}"><i class="fas fa-trophy text-warning me-2"></i> Достижения</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <i class="fas fa-sign-out-alt me-2"></i> Выйти
-                                    </button>
+                                    <button type="submit" class="dropdown-item text-danger"><i class="fas fa-sign-out-alt me-2"></i> Выйти</button>
                                 </form>
                             </li>
                         </ul>
@@ -269,7 +241,6 @@
 
     <main class="py-4">
         <div class="container">
-            <!-- Сообщения об успехе/ошибке -->
             @if(session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
@@ -306,20 +277,15 @@
                     <p class="text-muted">История игровой индустрии в одном месте</p>
                 </div>
                 <div class="col-md-6 text-end">
-                    <p class="text-muted mb-0">
-                        &copy; {{ date('Y') }} TimeLapse Games. Все права защищены.
-                    </p>
+                    <p class="text-muted mb-0">&copy; {{ date('Y') }} TimeLapse Games. Все права защищены.</p>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- ========= ДОБАВЛЕН JQUERY ========= -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- ================================= -->
 
-    <!-- ========= УВЕДОМЛЕНИЯ О ДОСТИЖЕНИЯХ ========= -->
     @if(session('new_achievements'))
         <div class="toast-container position-fixed bottom-0 end-0 p-3">
             @foreach(session('new_achievements') as $achievement)
@@ -331,14 +297,11 @@
                     </div>
                     <div class="toast-body">
                         <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
-                                <i class="{{ $achievement->icon }} fa-3x text-warning"></i>
-                            </div>
+                            <div class="flex-shrink-0"><i class="{{ $achievement->icon }} fa-3x text-warning"></i></div>
                             <div class="flex-grow-1 ms-3">
                                 <h6 class="mb-0">{{ $achievement->name }}</h6>
                                 <small>{{ $achievement->description }}</small>
-                                <br>
-                                <small class="text-success">+{{ $achievement->points }} очков</small>
+                                <br><small class="text-success">+{{ $achievement->points }} очков</small>
                             </div>
                         </div>
                     </div>
@@ -348,28 +311,21 @@
     @endif
 
     <script>
-        // Автоматическое скрытие тостов
         document.addEventListener('DOMContentLoaded', function() {
             var toasts = document.querySelectorAll('.toast');
             toasts.forEach(function(toast) {
-                setTimeout(function() {
-                    toast.classList.remove('show');
-                }, 5000);
+                setTimeout(function() { toast.classList.remove('show'); }, 5000);
             });
 
-            // Автоматическое скрытие алертов через 5 секунд
             var alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
             alerts.forEach(function(alert) {
                 setTimeout(function() {
                     alert.classList.remove('show');
-                    setTimeout(function() {
-                        alert.remove();
-                    }, 150);
+                    setTimeout(function() { alert.remove(); }, 150);
                 }, 5000);
             });
         });
     </script>
-    <!-- =========================================== -->
 
     @stack('scripts')
 </body>

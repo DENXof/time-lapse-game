@@ -83,12 +83,35 @@
                         @error('steam_app_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
-                    {{-- ПОЛЕ ДЛЯ РУЧНОЙ ЦЕНЫ --}}
                     <div class="mb-3">
-                        <label for="manual_price" class="form-label">Цена в Steam (ручной ввод)</label>
+                        <label for="manual_price" class="form-label">Цена (единая, для всех валют)</label>
                         <input type="text" class="form-control @error('manual_price') is-invalid @enderror" id="manual_price" name="manual_price" value="{{ old('manual_price') }}" placeholder="Например: 299 ₽ или Бесплатно">
-                        <small class="text-muted">Если Steam API не работает, укажите цену вручную</small>
+                        <small class="text-muted">Если не указаны цены для каждой валюты, будет использоваться эта</small>
                         @error('manual_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+
+                    {{-- ЦЕНЫ В РАЗНЫХ ВАЛЮТАХ --}}
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">💰 Цены в разных валютах (переопределяют единую цену)</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">🇷🇺 RUB (₽)</label>
+                                    <input type="text" class="form-control" name="prices[RUB]" value="{{ old('prices.RUB') }}" placeholder="Например: 2999">
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">🇺🇸 USD ($)</label>
+                                    <input type="text" class="form-control" name="prices[USD]" value="{{ old('prices.USD') }}" placeholder="Например: 29.99">
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label class="form-label">🇪🇺 EUR (€)</label>
+                                    <input type="text" class="form-control" name="prices[EUR]" value="{{ old('prices.EUR') }}" placeholder="Например: 29.99">
+                                </div>
+                            </div>
+                            <small class="text-muted">Оставьте пустым, если цена недоступна в этой валюте</small>
+                        </div>
                     </div>
 
                     <div class="mb-3">

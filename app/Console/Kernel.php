@@ -17,9 +17,6 @@ class Kernel extends ConsoleKernel
             ->dailyAt('03:00')
             ->withoutOverlapping()
             ->appendOutputTo(storage_path('logs/steam-prices.log'));
-
-        // Очистка кеша курсов валют раз в день
-        $schedule->command('cache:clear-currency-rates')->daily();
     }
 
     /**

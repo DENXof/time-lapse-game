@@ -75,7 +75,6 @@
                 </div>
             </div>
 
-            {{-- ТРЕЙЛЕР С YOUTUBE --}}
             @if(isset($trailer) && $trailer)
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-light">
@@ -85,18 +84,11 @@
                         </h3>
                     </div>
                     <div class="card-body p-0 ratio ratio-16x9">
-                        <iframe
-                            src="{{ $trailer['embed_url'] }}"
-                            title="{{ $trailer['title'] }}"
-                            frameborder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen>
-                        </iframe>
+                        <iframe src="{{ $trailer['embed_url'] }}" title="{{ $trailer['title'] }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
                     </div>
                 </div>
             @endif
 
-            {{-- КОММЕНТАРИИ --}}
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-light">
                     <h3>Комментарии ({{ $game->comments()->count() }})</h3>
@@ -154,25 +146,57 @@
                 </div>
             </div>
 
-            {{-- ЦЕНА В STEAM --}}
-            @if(isset($steamPrice) && $steamPrice)
-                <div class="card shadow-sm mt-4">
-                    <div class="card-header bg-light">
-                        <h4 class="mb-0">
-                            <i class="fab fa-steam text-info me-2"></i>
-                            Цена в Steam
-                        </h4>
-                    </div>
-                    <div class="card-body text-center">
-                        <h3 class="text-success">{{ $steamPrice }}</h3>
-                        <a href="https://store.steampowered.com/search?term={{ urlencode($game->title) }}"
-                           class="btn btn-sm btn-outline-info mt-2"
-                           target="_blank">
-                            <i class="fab fa-steam me-2"></i>Купить в Steam
-                        </a>
-                    </div>
-                </div>
-            @endif
+{{-- ЦЕНА В ВЫБРАННОЙ ВАЛЮТЕ --}}
+@php
+    $currentCurrency = session('currency', 'RUB');
+    $price = $game->getPrice($currentCurrency);
+    $currencySymbols = ['RUB' => '₽', 'USD' => '$', 'EUR' => '€'];
+    $symbol = $currencySymbols[$currentCurrency] ?? '';
+
+    // Очищаем цену от символов валюты, если они уже есть
+    if ($price) {
+        $cleanPrice = preg_replace('/[^0-9.,]/', '', $price);
+        if (!empty($cleanPrice)) {
+            $price = $cleanPrice;
+        }
+    }
+@endphp
+
+@if($price)
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-light">
+            <h4 class="mb-0">
+                <i class="fab fa-steam text-info me-2"></i>
+                Цена в Steam
+            </h4>
+        </div>
+        <div class="card-body text-center">
+            <h3 class="text-success">{{ $price }} {{ $symbol }}</h3>
+            <a href="https://store.steampowered.com/search?term={{ urlencode($game->title) }}"
+               class="btn btn-sm btn-outline-info mt-2"
+               target="_blank">
+                <i class="fab fa-steam me-2"></i>Купить в Steam
+            </a>
+        </div>
+    </div>
+@elseif($game->manual_price)
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-light">
+            <h4 class="mb-0">
+                <i class="fab fa-steam text-info me-2"></i>
+                Цена в Steam
+            </h4>
+        </div>
+        <div class="card-body text-center">
+            <h3 class="text-success">{{ $game->manual_price }}</h3>
+            <a href="https://store.steampowered.com/search?term={{ urlencode($game->title) }}"
+               class="btn btn-sm btn-outline-info mt-2"
+               target="_blank">
+                <i class="fab fa-steam me-2"></i>Купить в Steam
+            </a>
+        </div>
+    </div>
+@endif
         </div>
     </div>
 

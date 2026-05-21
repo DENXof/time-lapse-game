@@ -10,6 +10,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GenreController;
@@ -27,16 +28,12 @@ Route::get('/timeline', [HomeController::class, 'timeline'])->name('timeline');
 Route::get('games', [GameController::class, 'index'])->name('games.index');
 Route::get('games/{slug}', [GameController::class, 'show'])->name('games.show');
 
-// ========= ДОБАВЛЕННЫЕ МАРШРУТЫ ДЛЯ ЭТАПА 4 =========
 Route::get('/top', [GameController::class, 'top'])->name('games.top');
 Route::get('/new-releases', [GameController::class, 'newReleases'])->name('games.new');
 Route::get('/random-game', [GameController::class, 'randomGame'])->name('games.random');
 Route::get('/calendar', [GameController::class, 'calendar'])->name('games.calendar');
-// ====================================================
-
-// ========= ДОБАВЛЕННЫЙ МАРШРУТ ДЛЯ ДОСТИЖЕНИЙ =========
 Route::get('/achievements', [AchievementController::class, 'index'])->name('achievements.index');
-// =======================================================
+Route::get('/currency/{currency}', [CurrencyController::class, 'switch'])->name('currency.switch');
 
 // ============================================
 // АУТЕНТИФИКАЦИЯ ПОЛЬЗОВАТЕЛЕЙ (гости)
@@ -54,7 +51,6 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [\App\Http\Controllers\ProfileController::class, 'index'])->name('index');
         Route::get('/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('edit');
@@ -65,14 +61,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/{user}', [\App\Http\Controllers\ProfileController::class, 'show'])->name('show');
     });
 
-    // ИЗБРАННОЕ
     Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/favorites/{game}', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
-
-    // ОЦЕНКИ
     Route::post('/ratings/{game}', [RatingController::class, 'store'])->name('ratings.store');
 
-    // КОММЕНТАРИИ
     Route::prefix('comments')->name('comments.')->group(function () {
         Route::post('/game/{game}', [CommentController::class, 'store'])->name('store');
         Route::put('/{comment}', [CommentController::class, 'update'])->name('update');
@@ -81,7 +73,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/{comment}/reply', [CommentController::class, 'reply'])->name('reply');
     });
 
-    // ========= ДОБАВЛЕННЫЕ МАРШРУТЫ ДЛЯ СОЦИАЛЬНЫХ ФУНКЦИЙ =========
     Route::prefix('friends')->name('friends.')->group(function () {
         Route::get('/', [FriendController::class, 'index'])->name('index');
         Route::get('/requests', [FriendController::class, 'requests'])->name('requests');
@@ -95,27 +86,20 @@ Route::middleware('auth')->group(function () {
         Route::get('/feed', [ActivityController::class, 'feed'])->name('feed');
         Route::get('/my', [ActivityController::class, 'myActivity'])->name('my');
     });
-    // ================================================================
 });
 
 // ============================================
 // АДМИНИСТРАТИВНАЯ ПАНЕЛЬ
 // ============================================
 Route::prefix('admin')->name('admin.')->group(function () {
-    // Аутентификация админов
     Route::get('login', [AdminAuthController::class, 'showLoginForm'])->name('login');
     Route::post('login', [AdminAuthController::class, 'login'])->name('login.post');
     Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-    // Защищённые маршруты админки
     Route::middleware(['admin'])->group(function () {
-        // Дашборд
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-        // Управление жанрами
         Route::resource('genres', GenreController::class);
 
-        // Управление играми
         Route::prefix('games')->name('games.')->group(function () {
             Route::get('/', [GameController::class, 'adminIndex'])->name('index');
             Route::get('create', [GameController::class, 'create'])->name('create');
@@ -123,45 +107,26 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('{game}/edit', [GameController::class, 'edit'])->name('edit');
             Route::put('{game}', [GameController::class, 'update'])->name('update');
             Route::delete('{game}', [GameController::class, 'destroy'])->name('destroy');
-            // ========= ДОБАВЛЕННЫЙ МАРШРУТ =========
             Route::get('update-prices', [GameController::class, 'updatePrices'])->name('update-prices');
+            // ========= НОВЫЕ МАРШРУТЫ =========
+            Route::post('{game}/find-steam', [GameController::class, 'findSteamId'])->name('find-steam');
+            Route::get('find-missing-steam', [GameController::class, 'findMissingSteamIds'])->name('find-missing-steam');
         });
 
-        // ========= ДОБАВЛЕННЫЕ МАРШРУТЫ ДЛЯ РАСШИРЕННОЙ АДМИН-ПАНЕЛИ =========
-        // Управление пользователями
         Route::resource('users', UserController::class)->except(['create', 'store']);
         Route::post('users/{user}/ban', [UserController::class, 'ban'])->name('users.ban');
         Route::post('users/{user}/unban', [UserController::class, 'unban'])->name('users.unban');
 
-        // Управление комментариями
         Route::resource('comments', AdminCommentController::class)->only(['index', 'show', 'destroy']);
         Route::post('comments/{comment}/approve', [AdminCommentController::class, 'approve'])->name('comments.approve');
         Route::post('comments/{comment}/hide', [AdminCommentController::class, 'hide'])->name('comments.hide');
 
-        // Логи действий
         Route::get('logs', [LogController::class, 'index'])->name('logs.index');
-
-        // Настройки сайта
         Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
         Route::post('settings', [SettingsController::class, 'update'])->name('settings.update');
-        // =====================================================================
 
-        // Профиль администратора
         Route::get('profile', [AdminProfileController::class, 'edit'])->name('profile.edit');
         Route::put('profile', [AdminProfileController::class, 'update'])->name('profile.update');
         Route::put('profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password.update');
     });
-});
-
-// ТЕСТОВЫЙ МАРШРУТ ДЛЯ DISCORD (удалить после проверки)
-Route::get('/test-discord', function () {
-    $discord = new \App\Services\DiscordService();
-
-    $result = $discord->send([
-        'title' => '🎉 Тест Discord Webhook',
-        'description' => 'Если вы видите это сообщение, всё работает правильно!',
-        'color' => 0x3498db,
-    ]);
-
-    return $result ? '✅ Сообщение отправлено в Discord!' : '❌ Ошибка отправки. Проверьте логи.';
 });

@@ -2,19 +2,14 @@
 
 @extends('layouts.admin')
 
-{{-- Устанавливаем заголовки страницы --}}
 @section('title', 'Управление играми')
 @section('page-title', 'Управление играми')
 
-{{-- Начинаем секцию контента --}}
 @section('content')
 
-{{-- КАРТОЧКА СО СПИСКОМ ИГР --}}
 <div class="card border-0 shadow">
 
-    {{-- ШАПКА КАРТОЧКИ (заголовок + кнопка) --}}
     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-        {{-- Левая часть: заголовок и количество --}}
         <div>
             <h5 class="mb-0">
                 <i class="fas fa-gamepad me-2"></i>
@@ -28,21 +23,25 @@
             </small>
         </div>
 
-        {{-- Правая часть: кнопки --}}
         <div>
-            {{-- КНОПКА ОБНОВЛЕНИЯ ЦЕН STEAM --}}
-            <a href="{{ route('admin.games.update-prices') }}" class="btn btn-info btn-sm me-2"
-               onclick="return confirm('Обновить цены для всех игр? Это может занять некоторое время.')">
+            {{-- КНОПКА ПОИСКА STEAM ID ДЛЯ ВСЕХ ИГР --}}
+            <a href="{{ route('admin.games.find-missing-steam') }}"
+               class="btn btn-warning btn-sm me-2"
+               onclick="return confirm('Найти Steam ID для всех игр без него? Это может занять некоторое время.')">
+                <i class="fab fa-steam me-1"></i>Найти Steam ID для всех игр
+            </a>
+            {{-- КНОПКА ОБНОВЛЕНИЯ ЦЕН ИЗ STEAM --}}
+            <a href="{{ route('admin.games.update-prices') }}"
+               class="btn btn-info btn-sm me-2"
+               onclick="return confirm('Обновить цены для всех игр из Steam? Это может занять некоторое время.')">
                 <i class="fab fa-steam me-1"></i>Обновить цены Steam
             </a>
-            {{-- КНОПКА ДОБАВЛЕНИЯ ИГРЫ --}}
             <a href="{{ route('admin.games.create') }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-plus me-1"></i>Добавить игру
             </a>
         </div>
     </div>
 
-    {{-- ФОРМА ПОИСКА --}}
     <div class="card-body border-bottom">
         <form action="{{ route('admin.games.index') }}" method="GET" class="row g-3">
             <div class="col-md-10">
@@ -71,7 +70,6 @@
         </form>
     </div>
 
-    {{-- ОСНОВНОЕ СОДЕРЖИМОЕ --}}
     <div class="card-body">
 
         @if($games->isEmpty())
@@ -99,7 +97,8 @@
                             <th>Жанр</th>
                             <th>Год</th>
                             <th>Просмотры</th>
-                            <th>Цена</th>
+                            <th>Steam ID</th>
+                            <th>Цены (RUB/USD/EUR)</th>
                             <th width="150">Действия</th>
                         </tr>
                     </thead>
@@ -126,10 +125,19 @@
                                     <span class="badge bg-info">{{ $game->views_count }}</span>
                                 </td>
                                 <td>
-                                    @if($game->manual_price)
-                                        <span class="badge bg-success">{{ $game->manual_price }}</span>
-                                    @elseif($game->steam_app_id)
-                                        <span class="badge bg-secondary">Steam ID: {{ $game->steam_app_id }}</span>
+                                    @if($game->steam_app_id)
+                                        <span class="badge bg-success">{{ $game->steam_app_id }}</span>
+                                    @else
+                                        <span class="badge bg-secondary">Не найден</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($game->prices)
+                                        <span class="badge bg-success">RUB: {{ $game->prices['RUB'] ?? 'нет' }}</span>
+                                        <span class="badge bg-info">USD: {{ $game->prices['USD'] ?? 'нет' }}</span>
+                                        <span class="badge bg-warning">EUR: {{ $game->prices['EUR'] ?? 'нет' }}</span>
+                                    @elseif($game->manual_price)
+                                        <span class="badge bg-secondary">{{ $game->manual_price }}</span>
                                     @else
                                         <span class="badge bg-secondary">Нет цены</span>
                                     @endif
@@ -158,7 +166,7 @@
                                             </button>
                                         </form>
                                     </div>
-                                </td>
+                                </tr>
                             </tr>
                         @endforeach
                     </tbody>
