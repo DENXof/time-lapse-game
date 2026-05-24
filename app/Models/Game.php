@@ -23,13 +23,7 @@ class Game extends Model
         'views_count',
         'rating_avg',
         'rating_count',
-        'steam_app_id',
-        'manual_price',
-        'prices'
-    ];
-
-    protected $casts = [
-        'prices' => 'array',
+        'steam_app_id'
     ];
 
     protected $appends = ['era_style', 'decade'];
@@ -109,43 +103,14 @@ class Game extends Model
         return $this->favoritedBy()->where('user_id', $user->id)->exists();
     }
 
-    // ========= МЕТОДЫ ДЛЯ ЦЕН =========
-    public function getPrice($currency = null)
+    /**
+     * Получить ссылку на Steam
+     */
+    public function getSteamUrl()
     {
-        $currency = $currency ?? session('currency', 'RUB');
-        $prices = $this->prices ?? [];
-
-        if (isset($prices[$currency])) {
-            // Очищаем цену от символов валюты
-            $price = $prices[$currency];
-            $cleanedPrice = preg_replace('/[^0-9.,]/', '', $price);
-            return !empty($cleanedPrice) ? $cleanedPrice : $price;
+        if ($this->steam_app_id) {
+            return 'https://store.steampowered.com/app/' . $this->steam_app_id;
         }
-
-        if ($this->manual_price) {
-            $cleanedPrice = preg_replace('/[^0-9.,]/', '', $this->manual_price);
-            return !empty($cleanedPrice) ? $cleanedPrice : $this->manual_price;
-        }
-
-        return null;
-    }
-
-    public static function getCurrencySymbol($currency)
-    {
-        return match ($currency) {
-            'RUB' => '₽',
-            'USD' => '$',
-            'EUR' => '€',
-            default => $currency,
-        };
-    }
-
-    public static function getCurrencies()
-    {
-        return [
-            'RUB' => ['name' => 'Российский рубль', 'symbol' => '₽'],
-            'USD' => ['name' => 'Доллар США', 'symbol' => '$'],
-            'EUR' => ['name' => 'Евро', 'symbol' => '€'],
-        ];
+        return 'https://store.steampowered.com/search?term=' . urlencode($this->title);
     }
 }

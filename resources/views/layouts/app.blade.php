@@ -4,7 +4,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>@yield('title', config('app.name', 'TimeLapse Games'))</title>
@@ -35,24 +35,133 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* ========== ОСНОВНЫЕ СТИЛИ ========== */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             padding-top: 60px;
             background-color: #f8f9fa;
         }
 
+        /* ========== МОБИЛЬНЫЕ НАСТРОЙКИ ========== */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 56px;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            h2, h3 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+
+            /* Улучшаем отступы на мобильных */
+            .py-4 {
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
+            }
+
+            /* Карточки игр на мобильных */
+            .game-card-img {
+                height: 150px;
+            }
+
+            /* Бейджи на мобильных */
+            .badge {
+                font-size: 0.7rem;
+                padding: 4px 8px;
+                margin-bottom: 4px;
+                display: inline-block;
+            }
+
+            /* Хлебные крошки */
+            .breadcrumb {
+                font-size: 0.85rem;
+            }
+
+            /* Кнопки */
+            .btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+
+            /* Модальные окна */
+            .modal-dialog {
+                margin: 10px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            h2, h3 {
+                font-size: 1.25rem;
+            }
+
+            .badge {
+                font-size: 0.65rem;
+                padding: 3px 6px;
+            }
+
+            /* Скрываем некоторые тексты на очень маленьких экранах */
+            .d-mobile-none {
+                display: none;
+            }
+        }
+
+        /* ========== НАВИГАЦИЯ ========== */
         .navbar-brand {
             font-weight: bold;
             color: #6366f1 !important;
+            font-size: 1.1rem;
         }
 
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 0.95rem;
+            }
+
+            .navbar-nav {
+                margin-top: 10px;
+            }
+
+            .nav-link {
+                padding: 8px 0 !important;
+            }
+        }
+
+        /* ========== ГЕРОЙ-СЕКЦИЯ ========== */
         .hero {
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
-            padding: 80px 0;
-            margin-bottom: 40px;
+            padding: 60px 0;
+            margin-bottom: 30px;
         }
 
+        @media (max-width: 768px) {
+            .hero {
+                padding: 40px 0;
+                margin-bottom: 20px;
+            }
+
+            .hero h1 {
+                font-size: 1.75rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+
+        /* ========== КАРТОЧКИ ========== */
         .card {
             border: none;
             border-radius: 10px;
@@ -64,16 +173,42 @@
             transform: translateY(-5px);
         }
 
+        @media (max-width: 768px) {
+            .card:hover {
+                transform: none;
+            }
+
+            /* Уменьшаем внутренние отступы */
+            .card-body {
+                padding: 1rem;
+            }
+
+            .card-header {
+                padding: 0.75rem 1rem;
+            }
+        }
+
+        /* ========== КАРТОЧКИ СТАТИСТИКИ ========== */
         .stats-card {
             text-align: center;
-            padding: 30px 20px;
+            padding: 20px 15px;
         }
 
-        .stats-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
+        @media (max-width: 768px) {
+            .stats-card {
+                padding: 15px 10px;
+            }
+
+            .stats-icon {
+                font-size: 2rem;
+            }
+
+            .stats-card h3 {
+                font-size: 1.5rem;
+            }
         }
 
+        /* ========== ИЗОБРАЖЕНИЯ ========== */
         .game-card-img {
             height: 200px;
             object-fit: cover;
@@ -81,6 +216,117 @@
             border-top-right-radius: 10px;
         }
 
+        @media (max-width: 768px) {
+            .game-card-img {
+                height: 180px;
+            }
+        }
+
+        /* ========== КОММЕНТАРИИ ========== */
+        .comment-item {
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .comment-item .flex-shrink-0 {
+                margin-right: 12px;
+            }
+
+            .comment-item .avatar-md {
+                width: 40px;
+                height: 40px;
+            }
+
+            .comment-item .card-body {
+                padding: 12px;
+            }
+
+            .reply-form {
+                margin-left: 20px !important;
+            }
+
+            .replies-list {
+                margin-left: 20px !important;
+            }
+        }
+
+        /* ========== ФИЛЬТРЫ ========== */
+        @media (max-width: 768px) {
+            .filters-sidebar {
+                margin-bottom: 20px;
+            }
+
+            .filter-buttons {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+        }
+
+        /* ========== ТАБЛИЦЫ ========== */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 768px) {
+            .table td,
+            .table th {
+                padding: 8px;
+                font-size: 0.85rem;
+                white-space: nowrap;
+            }
+        }
+
+        /* ========== ПАГИНАЦИЯ ========== */
+        @media (max-width: 768px) {
+            .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .page-link {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* ========== ФОРМЫ ========== */
+        @media (max-width: 768px) {
+            .form-control,
+            .form-select {
+                font-size: 16px; /* Предотвращает масштабирование на iOS */
+            }
+
+            label {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* ========== ПОДВАЛ ========== */
+        footer {
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            footer {
+                margin-top: 20px;
+            }
+
+            footer .col-md-6 {
+                text-align: center !important;
+            }
+
+            footer h5 {
+                font-size: 1.1rem;
+            }
+
+            footer p {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* ========== ДРУГИЕ СТИЛИ ========== */
         .card-footer {
             background-color: white;
             border-top: 1px solid #eee;
@@ -88,24 +334,26 @@
             border-bottom-right-radius: 10px;
         }
 
-        .badge {
-            font-size: 0.8em;
-            padding: 5px 10px;
-        }
-
         .container {
             max-width: 1200px;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
         }
 
         .toast-container {
             z-index: 1100;
         }
 
+        /* Улучшенные отступы для сетки */
+        .row {
+            margin-right: -12px;
+            margin-left: -12px;
+        }
+
+        .row > [class*="col-"] {
+            padding-right: 12px;
+            padding-left: 12px;
+        }
+
+        /* Стили для аватаров */
         .avatar-sm {
             width: 32px;
             height: 32px;
@@ -124,8 +372,14 @@
             object-fit: cover;
         }
 
+        /* Ленивая загрузка изображений */
         img[loading="lazy"] {
             background-color: #f0f0f0;
+        }
+
+        /* Улучшенный скролл для мобильных */
+        .overflow-auto {
+            -webkit-overflow-scrolling: touch;
         }
     </style>
 
@@ -135,7 +389,8 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="{{ route('home') }}">
-                <i class="fas fa-gamepad me-2"></i>История компьютерных игр
+                <i class="fas fa-gamepad me-2"></i><span class="d-none d-sm-inline">История компьютерных игр</span>
+                <span class="d-inline d-sm-none">TimeLapse</span>
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -179,37 +434,25 @@
                     </li>
                 </ul>
 
-                {{-- ВЫБОР ВАЛЮТЫ --}}
-                <div class="dropdown me-2">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        @php
-                            $symbols = ['RUB' => '₽', 'USD' => '$', 'EUR' => '€'];
-                            $current = session('currency', 'RUB');
-                        @endphp
-                        {{ $symbols[$current] ?? '₽' }} {{ $current }}
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="{{ route('currency.switch', 'RUB') }}">🇷🇺 RUB (₽)</a></li>
-                        <li><a class="dropdown-item" href="{{ route('currency.switch', 'USD') }}">🇺🇸 USD ($)</a></li>
-                        <li><a class="dropdown-item" href="{{ route('currency.switch', 'EUR') }}">🇪🇺 EUR (€)</a></li>
-                    </ul>
-                </div>
-
-                {{-- БЫСТРЫЙ ПОИСК --}}
-                <form action="{{ route('games.index') }}" method="GET" class="d-flex me-3">
-                    <input type="text" name="search" class="form-control form-control-sm"
-                           placeholder="Поиск игр..." value="{{ request('search') }}"
-                           style="width: 200px;">
-                    <button type="submit" class="btn btn-sm btn-outline-primary ms-2">
-                        <i class="fas fa-search"></i>
-                    </button>
+                {{-- БЫСТРЫЙ ПОИСК (адаптирован для мобильных) --}}
+                <form action="{{ route('games.index') }}" method="GET" class="d-flex my-2 my-lg-0">
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="search" class="form-control"
+                               placeholder="Поиск игр..." value="{{ request('search') }}"
+                               style="min-width: 120px;">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                 </form>
 
-                {{-- БЛОК АВТОРИЗАЦИИ --}}
+                {{-- БЛОК АВТОРИЗАЦИИ (адаптирован для мобильных) --}}
                 @auth
                     <li class="nav-item dropdown" style="list-style: none;">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle me-1"></i> {{ Auth::user()->name }}
+                            <i class="fas fa-user-circle me-1"></i>
+                            <span class="d-none d-sm-inline">{{ Auth::user()->name }}</span>
+                            <i class="fas fa-chevron-down fa-xs d-inline d-sm-none"></i>
                             @if(Auth::user()->new_achievements->count() > 0)
                                 <span class="badge bg-danger rounded-pill">new</span>
                             @endif
@@ -232,8 +475,10 @@
                         </ul>
                     </li>
                 @else
-                    <a href="{{ route('login') }}" class="btn btn-outline-primary btn-sm me-2">Вход</a>
-                    <a href="{{ route('register') }}" class="btn btn-primary btn-sm">Регистрация</a>
+                    <div class="d-flex flex-column flex-sm-row gap-2 ms-2">
+                        <a href="{{ route('login') }}" class="btn btn-outline-primary btn-sm">Вход</a>
+                        <a href="{{ route('register') }}" class="btn btn-primary btn-sm">Регистрация</a>
+                    </div>
                 @endauth
             </div>
         </div>
@@ -272,11 +517,11 @@
     <footer class="bg-white border-top py-4 mt-5">
         <div class="container">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
                     <h5>TimeLapse Games</h5>
-                    <p class="text-muted">История игровой индустрии в одном месте</p>
+                    <p class="text-muted mb-0">История игровой индустрии в одном месте</p>
                 </div>
-                <div class="col-md-6 text-end">
+                <div class="col-md-6 text-center text-md-end">
                     <p class="text-muted mb-0">&copy; {{ date('Y') }} TimeLapse Games. Все права защищены.</p>
                 </div>
             </div>

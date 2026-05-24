@@ -33,7 +33,6 @@ Route::get('/new-releases', [GameController::class, 'newReleases'])->name('games
 Route::get('/random-game', [GameController::class, 'randomGame'])->name('games.random');
 Route::get('/calendar', [GameController::class, 'calendar'])->name('games.calendar');
 Route::get('/achievements', [AchievementController::class, 'index'])->name('achievements.index');
-Route::get('/currency/{currency}', [CurrencyController::class, 'switch'])->name('currency.switch');
 
 // ============================================
 // АУТЕНТИФИКАЦИЯ ПОЛЬЗОВАТЕЛЕЙ (гости)

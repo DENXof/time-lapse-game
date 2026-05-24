@@ -19,7 +19,7 @@
                 <div class="row g-0">
                     <div class="col-md-4">
                         @if($game->cover_image)
-                            <img src="{{ Storage::url($game->cover_image) }}" class="img-fluid rounded-start" alt="{{ $game->title }}" style="height: 100%; object-fit: cover;">
+                            <img src="{{ Storage::url($game->cover_image) }}" class="img-fluid rounded-start" alt="{{ $game->title }}" style="height: 100%; object-fit: cover;" loading="lazy">
                         @else
                             <div class="bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
                                 <i class="fas fa-gamepad fa-5x text-light"></i>
@@ -146,57 +146,39 @@
                 </div>
             </div>
 
-{{-- ЦЕНА В ВЫБРАННОЙ ВАЛЮТЕ --}}
-@php
-    $currentCurrency = session('currency', 'RUB');
-    $price = $game->getPrice($currentCurrency);
-    $currencySymbols = ['RUB' => '₽', 'USD' => '$', 'EUR' => '€'];
-    $symbol = $currencySymbols[$currentCurrency] ?? '';
-
-    // Очищаем цену от символов валюты, если они уже есть
-    if ($price) {
-        $cleanPrice = preg_replace('/[^0-9.,]/', '', $price);
-        if (!empty($cleanPrice)) {
-            $price = $cleanPrice;
-        }
-    }
-@endphp
-
-@if($price)
-    <div class="card shadow-sm mt-4">
-        <div class="card-header bg-light">
-            <h4 class="mb-0">
-                <i class="fab fa-steam text-info me-2"></i>
-                Цена в Steam
-            </h4>
-        </div>
-        <div class="card-body text-center">
-            <h3 class="text-success">{{ $price }} {{ $symbol }}</h3>
-            <a href="https://store.steampowered.com/search?term={{ urlencode($game->title) }}"
-               class="btn btn-sm btn-outline-info mt-2"
-               target="_blank">
-                <i class="fab fa-steam me-2"></i>Купить в Steam
-            </a>
-        </div>
+{{-- ССЫЛКА НА STEAM --}}
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-light">
+        <h4 class="mb-0">
+            <i class="fab fa-steam text-info me-2"></i>
+            Игра в Steam
+        </h4>
     </div>
-@elseif($game->manual_price)
-    <div class="card shadow-sm mt-4">
-        <div class="card-header bg-light">
-            <h4 class="mb-0">
-                <i class="fab fa-steam text-info me-2"></i>
-                Цена в Steam
-            </h4>
-        </div>
-        <div class="card-body text-center">
-            <h3 class="text-success">{{ $game->manual_price }}</h3>
-            <a href="https://store.steampowered.com/search?term={{ urlencode($game->title) }}"
-               class="btn btn-sm btn-outline-info mt-2"
-               target="_blank">
-                <i class="fab fa-steam me-2"></i>Купить в Steam
-            </a>
-        </div>
+    <div class="card-body text-center">
+        <a href="{{ $game->getSteamUrl() }}"
+           class="btn btn-success btn-lg px-4"
+           target="_blank"
+           rel="noopener noreferrer">
+            <i class="fab fa-steam me-2 fa-lg"></i>
+            @if($game->steam_app_id)
+                Открыть страницу в Steam
+            @else
+                Найти в Steam
+            @endif
+        </a>
+        <p class="text-muted mt-3 mb-0 small">
+            <i class="fas fa-external-link-alt me-1"></i>
+            Откроется в новой вкладке
+        </p>
+        @if(!$game->steam_app_id && auth()->check() && auth()->user()->isAdmin())
+            <div class="mt-3">
+                <a href="{{ route('admin.games.edit', $game->id) }}" class="btn btn-sm btn-outline-info">
+                    <i class="fas fa-edit me-1"></i>Указать Steam App ID
+                </a>
+            </div>
+        @endif
     </div>
-@endif
+</div>
         </div>
     </div>
 

@@ -103,10 +103,6 @@ class GameController extends Controller
             $trailer = null;
         }
 
-        // Steam цена (используем мультивалютные цены)
-        $currentCurrency = session('currency', 'RUB');
-        $price = $game->getPrice($currentCurrency);
-
         $this->setMeta(
             title: $game->title . ' - TimeLapse Games',
             description: Str::limit(strip_tags($game->description), 160),
@@ -114,7 +110,7 @@ class GameController extends Controller
             image: $game->cover_image ? Storage::url($game->cover_image) : null
         );
 
-        return view('games.show', compact('game', 'relatedGames', 'trailer', 'price'));
+        return view('games.show', compact('game', 'relatedGames', 'trailer'));
     }
 
     // ========= ДОБАВЛЕННЫЕ МЕТОДЫ =========
@@ -229,13 +225,8 @@ class GameController extends Controller
             'publisher' => 'nullable|string|max:255',
             'platform' => 'required|string|max:255',
             'steam_app_id' => 'nullable|string|max:50',
-            'manual_price' => 'nullable|string|max:50',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
-        if ($request->has('prices')) {
-            $validated['prices'] = array_filter($request->prices);
-        }
 
         $validated['slug'] = Str::slug($validated['title']);
 
@@ -270,13 +261,8 @@ class GameController extends Controller
             'publisher' => 'nullable|string|max:255',
             'platform' => 'required|string|max:255',
             'steam_app_id' => 'nullable|string|max:50',
-            'manual_price' => 'nullable|string|max:50',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
-        if ($request->has('prices')) {
-            $validated['prices'] = array_filter($request->prices);
-        }
 
         if ($game->title !== $validated['title']) {
             $validated['slug'] = Str::slug($validated['title']);
@@ -317,46 +303,7 @@ class GameController extends Controller
             ->with('success', 'Игра успешно удалена!');
     }
 
-    // ========= МЕТОД ДЛЯ ОБНОВЛЕНИЯ ЦЕН ИЗ STEAM =========
-    public function updatePrices(Request $request)
-    {
-        set_time_limit(0);
-
-        $games = Game::whereNotNull('steam_app_id')
-            ->where('steam_app_id', '!=', '')
-            ->get();
-
-        if ($games->isEmpty()) {
-            return redirect()->route('admin.games.index')
-                ->with('error', 'Нет игр с указанным Steam App ID');
-        }
-
-        $updated = 0;
-        $failed = 0;
-        $steamService = new SteamService();
-
-        foreach ($games as $game) {
-            try {
-                $prices = $steamService->getAllPrices($game->steam_app_id);
-
-                if (!empty($prices)) {
-                    $game->prices = $prices;
-                    $game->save();
-                    $updated++;
-                } else {
-                    $failed++;
-                }
-            } catch (\Exception $e) {
-                $failed++;
-                Log::error('Steam price update failed for ' . $game->title . ': ' . $e->getMessage());
-            }
-        }
-
-        return redirect()->route('admin.games.index')
-            ->with('success', "Обновление завершено! Обновлено: {$updated}, Ошибок: {$failed}");
-    }
-
-    // ========= НОВЫЙ МЕТОД: ПОИСК STEAM ID ДЛЯ ОДНОЙ ИГРЫ =========
+    // ========= МЕТОД: ПОИСК STEAM ID ДЛЯ ОДНОЙ ИГРЫ =========
     public function findSteamId(Game $game)
     {
         $steamService = new SteamService();
@@ -367,22 +314,15 @@ class GameController extends Controller
             $game->steam_app_id = $result['app_id'];
             $game->save();
 
-            // Обновляем цены
-            $prices = $steamService->getAllPrices($result['app_id']);
-            if (!empty($prices)) {
-                $game->prices = $prices;
-                $game->save();
-            }
-
             return redirect()->route('admin.games.edit', $game->id)
-                ->with('success', "Steam ID найден: {$result['app_id']}. Цены обновлены.");
+                ->with('success', "Steam ID найден: {$result['app_id']}");
         }
 
         return redirect()->route('admin.games.edit', $game->id)
             ->with('error', 'Игра не найдена в Steam. Укажите Steam App ID вручную.');
     }
 
-    // ========= НОВЫЙ МЕТОД: ПОИСК STEAM ID ДЛЯ ВСЕХ ИГР =========
+    // ========= МЕТОД: ПОИСК STEAM ID ДЛЯ ВСЕХ ИГР =========
     public function findMissingSteamIds()
     {
         set_time_limit(0);
@@ -407,12 +347,6 @@ class GameController extends Controller
                 if ($result) {
                     $game->steam_app_id = $result['app_id'];
                     $game->save();
-
-                    $prices = $steamService->getAllPrices($result['app_id']);
-                    if (!empty($prices)) {
-                        $game->prices = $prices;
-                        $game->save();
-                    }
                     $updated++;
                 } else {
                     $notFound++;

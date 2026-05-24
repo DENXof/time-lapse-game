@@ -30,12 +30,6 @@
                onclick="return confirm('Найти Steam ID для всех игр без него? Это может занять некоторое время.')">
                 <i class="fab fa-steam me-1"></i>Найти Steam ID для всех игр
             </a>
-            {{-- КНОПКА ОБНОВЛЕНИЯ ЦЕН ИЗ STEAM --}}
-            <a href="{{ route('admin.games.update-prices') }}"
-               class="btn btn-info btn-sm me-2"
-               onclick="return confirm('Обновить цены для всех игр из Steam? Это может занять некоторое время.')">
-                <i class="fab fa-steam me-1"></i>Обновить цены Steam
-            </a>
             <a href="{{ route('admin.games.create') }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-plus me-1"></i>Добавить игру
             </a>
@@ -98,7 +92,6 @@
                             <th>Год</th>
                             <th>Просмотры</th>
                             <th>Steam ID</th>
-                            <th>Цены (RUB/USD/EUR)</th>
                             <th width="150">Действия</th>
                         </tr>
                     </thead>
@@ -129,17 +122,6 @@
                                         <span class="badge bg-success">{{ $game->steam_app_id }}</span>
                                     @else
                                         <span class="badge bg-secondary">Не найден</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($game->prices)
-                                        <span class="badge bg-success">RUB: {{ $game->prices['RUB'] ?? 'нет' }}</span>
-                                        <span class="badge bg-info">USD: {{ $game->prices['USD'] ?? 'нет' }}</span>
-                                        <span class="badge bg-warning">EUR: {{ $game->prices['EUR'] ?? 'нет' }}</span>
-                                    @elseif($game->manual_price)
-                                        <span class="badge bg-secondary">{{ $game->manual_price }}</span>
-                                    @else
-                                        <span class="badge bg-secondary">Нет цены</span>
                                     @endif
                                 </td>
                                 <td>

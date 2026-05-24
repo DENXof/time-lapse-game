@@ -79,39 +79,8 @@
                     <div class="mb-3">
                         <label for="steam_app_id" class="form-label">Steam App ID</label>
                         <input type="text" class="form-control @error('steam_app_id') is-invalid @enderror" id="steam_app_id" name="steam_app_id" value="{{ old('steam_app_id') }}" placeholder="Например: 292030 для The Witcher 3">
-                        <small class="text-muted"><a href="https://steamdb.info/" target="_blank">Найдите App ID на SteamDB</a></small>
+                        <small class="text-muted"><a href="https://steamdb.info/" target="_blank">Найдите App ID на SteamDB</a> (необязательно, но рекомендуется для прямой ссылки)</small>
                         @error('steam_app_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="manual_price" class="form-label">Цена (единая, для всех валют)</label>
-                        <input type="text" class="form-control @error('manual_price') is-invalid @enderror" id="manual_price" name="manual_price" value="{{ old('manual_price') }}" placeholder="Например: 299 ₽ или Бесплатно">
-                        <small class="text-muted">Если не указаны цены для каждой валюты, будет использоваться эта</small>
-                        @error('manual_price')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
-
-                    {{-- ЦЕНЫ В РАЗНЫХ ВАЛЮТАХ --}}
-                    <div class="card mb-3">
-                        <div class="card-header bg-light">
-                            <h6 class="mb-0">💰 Цены в разных валютах (переопределяют единую цену)</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-4 mb-2">
-                                    <label class="form-label">🇷🇺 RUB (₽)</label>
-                                    <input type="text" class="form-control" name="prices[RUB]" value="{{ old('prices.RUB') }}" placeholder="Например: 2999">
-                                </div>
-                                <div class="col-md-4 mb-2">
-                                    <label class="form-label">🇺🇸 USD ($)</label>
-                                    <input type="text" class="form-control" name="prices[USD]" value="{{ old('prices.USD') }}" placeholder="Например: 29.99">
-                                </div>
-                                <div class="col-md-4 mb-2">
-                                    <label class="form-label">🇪🇺 EUR (€)</label>
-                                    <input type="text" class="form-control" name="prices[EUR]" value="{{ old('prices.EUR') }}" placeholder="Например: 29.99">
-                                </div>
-                            </div>
-                            <small class="text-muted">Оставьте пустым, если цена недоступна в этой валюте</small>
-                        </div>
                     </div>
 
                     <div class="mb-3">

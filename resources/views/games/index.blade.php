@@ -1,4 +1,3 @@
-{{-- ПУБЛИЧНАЯ СТРАНИЦА СО ВСЕМИ ИГРАМИ (С ФИЛЬТРАЦИЕЙ) --}}
 @extends('layouts.app')
 
 @section('title', 'Все игры - TimeLapse Games')
@@ -6,40 +5,31 @@
 @section('content')
 <div class="container py-4">
     <div class="row">
-        <!-- Боковая панель с фильтрами -->
+        <!-- Боковая панель с фильтрами (скрывается на мобильных) -->
         <div class="col-lg-3 mb-4">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm filters-sidebar">
                 <div class="card-header bg-white">
                     <h5 class="mb-0">
                         <i class="fas fa-filter me-2"></i>Фильтры
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="{{ route('games.index') }}" id="filter-form">
-                        <!-- Поиск -->
+                    <form method="GET" action="{{ route('games.index') }}">
                         <div class="mb-3">
                             <label class="form-label">Поиск</label>
-                            <input type="text"
-                                   name="search"
-                                   class="form-control"
-                                   placeholder="Название игры..."
-                                   value="{{ request('search') }}">
+                            <input type="text" name="search" class="form-control" placeholder="Название игры..." value="{{ request('search') }}">
                         </div>
 
-                        <!-- Жанр -->
                         <div class="mb-3">
                             <label class="form-label">Жанр</label>
                             <select name="genre" class="form-select">
                                 <option value="">Все жанры</option>
                                 @foreach($genres as $genre)
-                                    <option value="{{ $genre->id }}" {{ request('genre') == $genre->id ? 'selected' : '' }}>
-                                        {{ $genre->name }}
-                                    </option>
+                                    <option value="{{ $genre->id }}" {{ request('genre') == $genre->id ? 'selected' : '' }}>{{ $genre->name }}</option>
                                 @endforeach
                             </select>
                         </div>
 
-                        <!-- Десятилетие -->
                         <div class="mb-3">
                             <label class="form-label">Десятилетие</label>
                             <select name="decade" class="form-select">
@@ -52,7 +42,6 @@
                             </select>
                         </div>
 
-                        <!-- Платформа -->
                         <div class="mb-3">
                             <label class="form-label">Платформа</label>
                             <select name="platform" class="form-select">
@@ -61,13 +50,11 @@
                                 <option value="PlayStation" {{ request('platform') == 'PlayStation' ? 'selected' : '' }}>PlayStation</option>
                                 <option value="Xbox" {{ request('platform') == 'Xbox' ? 'selected' : '' }}>Xbox</option>
                                 <option value="Nintendo" {{ request('platform') == 'Nintendo' ? 'selected' : '' }}>Nintendo</option>
-                                <option value="Sega" {{ request('platform') == 'Sega' ? 'selected' : '' }}>Sega</option>
                             </select>
                         </div>
 
                         <hr>
 
-                        <!-- Сортировка -->
                         <div class="mb-3">
                             <label class="form-label">Сортировка</label>
                             <select name="sort" class="form-select">
@@ -75,8 +62,6 @@
                                 <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>📅 Сначала старые</option>
                                 <option value="rating" {{ request('sort') == 'rating' ? 'selected' : '' }}>⭐ По рейтингу</option>
                                 <option value="popular" {{ request('sort') == 'popular' ? 'selected' : '' }}>👁️ По популярности</option>
-                                <option value="az" {{ request('sort') == 'az' ? 'selected' : '' }}>📝 А-Я</option>
-                                <option value="za" {{ request('sort') == 'za' ? 'selected' : '' }}>📝 Я-А</option>
                             </select>
                         </div>
 
@@ -95,69 +80,44 @@
 
         <!-- Список игр -->
         <div class="col-lg-9">
-            <!-- Результаты поиска -->
-            @if(request()->anyFilled(['search', 'genre', 'decade', 'platform']))
-                <div class="alert alert-info mb-3">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Найдено игр: {{ $games->total() }}
-                    <a href="{{ route('games.index') }}" class="float-end text-decoration-none">✕</a>
-                </div>
-            @endif
-
-            <!-- Сетка игр -->
             @if($games->count() > 0)
-                <div class="row">
+                <div class="row g-3">
                     @foreach($games as $game)
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card h-100 shadow-sm game-card">
-                                <!-- Обложка -->
+                        <div class="col-sm-6 col-md-4 col-lg-4">
+                            <div class="card h-100 shadow-sm">
                                 @if($game->cover_image)
                                     <img src="{{ Storage::url($game->cover_image) }}"
-                                         class="card-img-top game-card-img"
+                                         class="card-img-top"
                                          alt="{{ $game->title }}"
+                                         style="height: 180px; object-fit: cover;"
                                          loading="lazy">
                                 @else
-                                    <div class="bg-secondary d-flex align-items-center justify-content-center game-card-img">
+                                    <div class="bg-secondary d-flex align-items-center justify-content-center" style="height: 180px;">
                                         <i class="fas fa-gamepad fa-3x text-light"></i>
                                     </div>
                                 @endif
-
                                 <div class="card-body">
-                                    <h5 class="card-title">{{ $game->title }}</h5>
-                                    <p class="card-text text-muted small">
-                                        {{ Str::limit($game->description, 80) }}
-                                    </p>
-
-                                    <!-- Рейтинг -->
-                                    <div class="mb-2">
-                                        @if($game->rating_count > 0)
-                                            <span class="text-warning">
-                                                @for($i = 1; $i <= 5; $i++)
-                                                    @if($i <= round($game->rating_avg))
-                                                        <i class="fas fa-star"></i>
-                                                    @else
-                                                        <i class="far fa-star"></i>
-                                                    @endif
-                                                @endfor
-                                            </span>
-                                            <small class="text-muted">({{ $game->rating_count }})</small>
-                                        @else
-                                            <small class="text-muted">Нет оценок</small>
-                                        @endif
-                                    </div>
-
-                                    <!-- Бейджи -->
+                                    <h5 class="card-title">{{ Str::limit($game->title, 30) }}</h5>
+                                    <p class="card-text text-muted small">{{ Str::limit($game->description, 80) }}</p>
                                     <div class="mb-2">
                                         <span class="badge bg-primary">{{ $game->genre->name ?? 'Без жанра' }}</span>
                                         <span class="badge bg-secondary">{{ $game->release_year }}</span>
-                                        <span class="badge bg-info">
-                                            <i class="fas fa-desktop me-1"></i>{{ $game->platform }}
-                                        </span>
                                     </div>
+                                    @if($game->rating_count > 0)
+                                        <div class="text-warning small">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                @if($i <= round($game->rating_avg))
+                                                    <i class="fas fa-star"></i>
+                                                @else
+                                                    <i class="far fa-star"></i>
+                                                @endif
+                                            @endfor
+                                            <span class="text-muted">({{ $game->rating_count }})</span>
+                                        </div>
+                                    @endif
                                 </div>
-
                                 <div class="card-footer bg-white">
-                                    <a href="{{ route('games.show', $game->slug) }}" class="btn btn-outline-primary btn-sm w-100">
+                                    <a href="{{ route('games.show', $game->slug) }}" class="btn btn-sm btn-outline-primary w-100">
                                         Подробнее <i class="fas fa-arrow-right ms-2"></i>
                                     </a>
                                 </div>
@@ -165,42 +125,18 @@
                         </div>
                     @endforeach
                 </div>
-
-                <!-- Пагинация -->
-                @if($games->hasPages())
-                    <div class="d-flex justify-content-center mt-4">
-                        {{ $games->links() }}
-                    </div>
-                @endif
-
+                <div class="mt-4">
+                    {{ $games->links() }}
+                </div>
             @else
-                <div class="alert alert-warning text-center">
+                <div class="alert alert-warning text-center py-5">
                     <i class="fas fa-frown fa-3x mb-3"></i>
                     <h5>Игры не найдены</h5>
                     <p>Попробуйте изменить параметры поиска</p>
-                    <a href="{{ route('games.index') }}" class="btn btn-primary">
-                        Сбросить фильтры
-                    </a>
+                    <a href="{{ route('games.index') }}" class="btn btn-primary">Сбросить фильтры</a>
                 </div>
             @endif
         </div>
     </div>
 </div>
 @endsection
-
-@push('styles')
-<style>
-    .game-card-img {
-        height: 180px;
-        object-fit: cover;
-        border-top-left-radius: 10px;
-        border-top-right-radius: 10px;
-    }
-    .game-card {
-        transition: transform 0.2s;
-    }
-    .game-card:hover {
-        transform: translateY(-5px);
-    }
-</style>
-@endpush

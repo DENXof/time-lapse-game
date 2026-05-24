@@ -4,12 +4,12 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>@yield('title', 'Админ-панель - TimeLapse Games')</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}?v={{ time() }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
     <style>
         body {
@@ -22,11 +22,11 @@
             background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
             min-height: 100vh;
             color: white;
-            padding: 0;
             box-shadow: 3px 0 15px rgba(0,0,0,0.1);
             position: fixed;
             width: 280px;
             z-index: 1000;
+            transition: all 0.3s;
         }
 
         .sidebar-header {
@@ -34,11 +34,6 @@
             background: #1a252f;
             text-align: center;
             border-bottom: 1px solid #34495e;
-        }
-
-        .sidebar-header h4 {
-            margin: 0;
-            font-weight: bold;
         }
 
         .admin-sidebar .nav-link {
@@ -74,6 +69,56 @@
             margin-left: 280px;
             padding: 20px;
             min-height: 100vh;
+            transition: all 0.3s;
+        }
+
+        /* АДАПТИВНОСТЬ ДЛЯ АДМИНКИ */
+        @media (max-width: 992px) {
+            .admin-sidebar {
+                width: 240px;
+            }
+            .admin-content {
+                margin-left: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                position: relative;
+                width: 100%;
+                min-height: auto;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+
+            .admin-content {
+                margin-left: 0;
+            }
+
+            .sidebar-toggle {
+                display: block;
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1100;
+                background: #3498db;
+                border: none;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                color: white;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            }
+        }
+
+        @media (min-width: 769px) {
+            .sidebar-toggle {
+                display: none;
+            }
         }
 
         .admin-header {
@@ -85,71 +130,46 @@
             border-left: 5px solid #3498db;
         }
 
-        /* КАРТОЧКИ СТАТИСТИКИ */
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-            border-top: 4px solid;
-            height: 100%;
-        }
+        /* Таблицы на мобильных */
+        @media (max-width: 768px) {
+            .table td,
+            .table th {
+                padding: 8px;
+                font-size: 0.8rem;
+                white-space: nowrap;
+            }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
+            .btn-group-sm > .btn {
+                padding: 4px 8px;
+            }
 
-        .stat-card.games { border-color: #3498db; }
-        .stat-card.genres { border-color: #2ecc71; }
-        .stat-card.views { border-color: #e74c3c; }
-        .stat-card.users { border-color: #9b59b6; }
-        .stat-card.comments { border-color: #f39c12; }
-        .stat-card.ratings { border-color: #e67e22; }
-
-        .stat-icon {
-            font-size: 2.5rem;
-            opacity: 0.7;
-        }
-
-        .stat-card h2 {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        /* АНИМАЦИИ */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            .card-header {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
 
         .fade-in {
             animation: fadeIn 0.5s ease-out;
         }
 
-        @media (max-width: 768px) {
-            .admin-sidebar {
-                position: relative;
-                width: 100%;
-                min-height: auto;
-            }
-            .admin-content {
-                margin-left: 0;
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 
     @stack('styles')
 </head>
 <body>
+    <!-- Кнопка для показа/скрытия меню на мобильных -->
+    <button class="sidebar-toggle btn btn-primary" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
     <div class="container-fluid">
         <div class="row">
-
-            {{-- ЛЕВОЕ МЕНЮ (САЙДБАР) --}}
-            <div class="col-12 col-md-auto px-0 admin-sidebar">
+            <div class="col-12 col-md-auto px-0 admin-sidebar" id="adminSidebar">
                 <div class="sidebar-header">
                     <h4 class="mb-0">
                         <i class="fas fa-gamepad"></i> TimeLapse
@@ -158,32 +178,25 @@
                 </div>
 
                 <nav class="nav flex-column pt-3">
-                    <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
-                       href="{{ route('admin.dashboard') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                         <i class="fas fa-tachometer-alt"></i> Дашборд
                     </a>
-                    <a class="nav-link {{ request()->routeIs('admin.games.*') ? 'active' : '' }}"
-                       href="{{ route('admin.games.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.games.*') ? 'active' : '' }}" href="{{ route('admin.games.index') }}">
                         <i class="fas fa-gamepad"></i> Игры
                     </a>
-                    <a class="nav-link {{ request()->routeIs('admin.genres.*') ? 'active' : '' }}"
-                       href="{{ route('admin.genres.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.genres.*') ? 'active' : '' }}" href="{{ route('admin.genres.index') }}">
                         <i class="fas fa-tags"></i> Жанры
                     </a>
-                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
-                       href="{{ route('admin.users.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" href="{{ route('admin.users.index') }}">
                         <i class="fas fa-users"></i> Пользователи
                     </a>
-                    <a class="nav-link {{ request()->routeIs('admin.comments.*') ? 'active' : '' }}"
-                       href="{{ route('admin.comments.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.comments.*') ? 'active' : '' }}" href="{{ route('admin.comments.index') }}">
                         <i class="fas fa-comments"></i> Комментарии
                     </a>
-                    <a class="nav-link {{ request()->routeIs('admin.logs.*') ? 'active' : '' }}"
-                       href="{{ route('admin.logs.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.logs.*') ? 'active' : '' }}" href="{{ route('admin.logs.index') }}">
                         <i class="fas fa-history"></i> Логи
                     </a>
-                    <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}"
-                       href="{{ route('admin.settings.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="{{ route('admin.settings.index') }}">
                         <i class="fas fa-cog"></i> Настройки
                     </a>
 
@@ -191,21 +204,17 @@
                         <a class="nav-link" href="{{ route('home') }}" target="_blank">
                             <i class="fas fa-external-link-alt"></i> На сайт
                         </a>
-                        <a class="nav-link text-danger" href="{{ route('admin.logout') }}"
-                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <a class="nav-link text-danger" href="{{ route('admin.logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="fas fa-sign-out-alt"></i> Выйти
                         </a>
-                        <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="d-none">
-                            @csrf
-                        </form>
+                        <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="d-none">@csrf</form>
                     </div>
                 </nav>
             </div>
 
-            {{-- ОСНОВНОЙ КОНТЕНТ --}}
             <div class="col admin-content">
                 <div class="admin-header">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
                         <div>
                             <h3 class="mb-1">@yield('page-title', 'Админ-панель')</h3>
                             <p class="text-muted mb-0">@yield('page-subtitle', 'Панель управления TimeLapse Games')</p>
@@ -222,10 +231,7 @@
                                 <li><a class="dropdown-item" href="{{ route('admin.profile.edit') }}">✏️ Редактировать профиль</a></li>
                                 <li><a class="dropdown-item" href="{{ route('home') }}">🌐 Перейти на сайт</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="{{ route('admin.logout') }}"
-                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                    🚪 Выйти
-                                </a></li>
+                                <li><a class="dropdown-item text-danger" href="{{ route('admin.logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🚪 Выйти</a></li>
                             </ul>
                         </div>
                     </div>
@@ -263,6 +269,20 @@
                 const linkUrl = $(this).attr('href');
                 if (linkUrl && linkUrl !== '#' && currentUrl.includes(linkUrl)) {
                     $(this).addClass('active');
+                }
+            });
+
+            // Мобильное меню
+            $('#sidebarToggle').on('click', function() {
+                $('#adminSidebar').toggleClass('show');
+            });
+
+            // Закрытие меню при клике вне его на мобильных
+            $(document).on('click', function(event) {
+                if ($(window).width() <= 768) {
+                    if (!$(event.target).closest('#adminSidebar').length && !$(event.target).closest('#sidebarToggle').length) {
+                        $('#adminSidebar').removeClass('show');
+                    }
                 }
             });
         });
