@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Jobs\DiscordNotificationJob;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -15,7 +16,21 @@ class DiscordService
     }
 
     /**
-     * Отправить embed сообщение в Discord
+     * Отправить embed сообщение в Discord (асинхронно через очередь)
+     */
+    public function sendAsync($embed)
+    {
+        if (!$this->webhookUrl) {
+            Log::error('Discord webhook URL not configured');
+            return false;
+        }
+
+        DiscordNotificationJob::dispatch($embed);
+        return true;
+    }
+
+    /**
+     * Отправить embed сообщение в Discord (синхронно)
      */
     public function send($embed)
     {
@@ -24,15 +39,12 @@ class DiscordService
             return false;
         }
 
-        // Если передали массив с эмбедом
         if (is_array($embed) && isset($embed['title'])) {
             $data = [
                 'username' => 'TimeLapse Games',
                 'embeds' => [$embed]
             ];
-        }
-        // Если передали просто текст
-        else {
+        } else {
             $data = [
                 'username' => 'TimeLapse Games',
                 'content' => $embed
@@ -89,7 +101,7 @@ class DiscordService
             $embed['thumbnail'] = ['url' => Storage::url($game->cover_image)];
         }
 
-        return $this->send($embed);
+        return $this->sendAsync($embed);
     }
 
     /**
@@ -111,7 +123,7 @@ class DiscordService
             'timestamp' => now()->toIso8601String(),
         ];
 
-        return $this->send($embed);
+        return $this->sendAsync($embed);
     }
 
     /**
@@ -131,6 +143,6 @@ class DiscordService
             $embed['thumbnail'] = ['url' => Storage::url($comment->user->avatar)];
         }
 
-        return $this->send($embed);
+        return $this->sendAsync($embed);
     }
 }
