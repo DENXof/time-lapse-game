@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\GameController;
+use App\Http\Controllers\Api\ApiGameController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CommentController;
@@ -9,14 +9,14 @@ use App\Http\Controllers\Api\CommentController;
 // ============================================
 // ПУБЛИЧНЫЕ API МАРШРУТЫ (без авторизации)
 // ============================================
-Route::get('/games', [GameController::class, 'index']);
-Route::get('/games/top', [GameController::class, 'top']);
-Route::get('/games/new', [GameController::class, 'newReleases']);
-Route::get('/games/random', [GameController::class, 'randomGame']);
-Route::get('/games/{id}', [GameController::class, 'show']);
-Route::get('/games/slug/{slug}', [GameController::class, 'showBySlug']);
-Route::get('/genres', [GameController::class, 'genres']);
-Route::get('/genres/{id}/games', [GameController::class, 'gamesByGenre']);
+Route::get('/games', [ApiGameController::class, 'index']);
+Route::get('/games/top', [ApiGameController::class, 'top']);
+Route::get('/games/new', [ApiGameController::class, 'newReleases']);
+Route::get('/games/random', [ApiGameController::class, 'randomGame']);
+Route::get('/games/{id}', [ApiGameController::class, 'show']);
+Route::get('/games/slug/{slug}', [ApiGameController::class, 'showBySlug']);
+Route::get('/genres', [ApiGameController::class, 'genres']);
+Route::get('/genres/{id}/games', [ApiGameController::class, 'gamesByGenre']);
 
 // ============================================
 // АУТЕНТИФИКАЦИЯ (API)

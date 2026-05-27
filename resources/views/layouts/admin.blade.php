@@ -199,6 +199,9 @@
                     <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}" href="{{ route('admin.settings.index') }}">
                         <i class="fas fa-cog"></i> Настройки
                     </a>
+                    <a class="nav-link {{ request()->routeIs('admin.import-games') ? 'active' : '' }}" href="{{ route('admin.import-games') }}">
+    <i class="fas fa-database me-2"></i> Импорт игр
+</a>
 
                     <div class="mt-4 pt-3 border-top border-secondary">
                         <a class="nav-link" href="{{ route('home') }}" target="_blank">

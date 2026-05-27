@@ -10,7 +10,6 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\ActivityController;
-use App\Http\Controllers\CurrencyController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GenreController;
@@ -107,7 +106,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::put('{game}', [GameController::class, 'update'])->name('update');
             Route::delete('{game}', [GameController::class, 'destroy'])->name('destroy');
             Route::get('update-prices', [GameController::class, 'updatePrices'])->name('update-prices');
-            // ========= НОВЫЕ МАРШРУТЫ =========
             Route::post('{game}/find-steam', [GameController::class, 'findSteamId'])->name('find-steam');
             Route::get('find-missing-steam', [GameController::class, 'findMissingSteamIds'])->name('find-missing-steam');
         });
@@ -127,10 +125,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('profile', [AdminProfileController::class, 'edit'])->name('profile.edit');
         Route::put('profile', [AdminProfileController::class, 'update'])->name('profile.update');
         Route::put('profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password.update');
+
         // Очистка кеша
         Route::get('clear-cache', function () {
             \Illuminate\Support\Facades\Cache::flush();
             return back()->with('success', 'Кеш успешно очищен!');
         })->name('admin.clear-cache');
+
+        // ========= НОВЫЕ МАРШРУТЫ ДЛЯ ИМПОРТА =========
+        Route::get('import-games', function () {
+            return view('admin.import-games');
+        })->name('import-games');
+
+        Route::post('import-games/run', [GameController::class, 'runImport'])->name('import-games.run');
     });
 });

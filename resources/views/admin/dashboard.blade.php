@@ -7,28 +7,6 @@
 
 @section('content')
 
-{{-- КНОПКА ОЧИСТКИ КЕША --}}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm bg-light">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 class="mb-0">
-                        <i class="fas fa-database me-2 text-primary"></i>
-                        Управление кешем
-                    </h5>
-                    <small class="text-muted">Очистка кеша ускорит загрузку сайта при изменениях</small>
-                </div>
-                <a href="{{ route('admin.clear-cache') }}"
-                   class="btn btn-warning"
-                   onclick="return confirm('Очистить весь кеш сайта? Это может временно замедлить загрузку страниц.')">
-                    <i class="fas fa-trash-alt me-1"></i>Очистить кеш
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
 {{-- СТРОКА СО СТАТИСТИКОЙ (6 карточек) --}}
 <div class="row">
     <div class="col-md-4 col-lg-2 mb-3">
@@ -239,10 +217,9 @@
                         </a>
                     </div>
                     <div class="col-md-6">
-                        <a href="{{ route('admin.clear-cache') }}" class="btn btn-warning w-100 py-3"
-                           onclick="return confirm('Очистить весь кеш сайта?')">
-                            <i class="fas fa-trash-alt fa-2x mb-2 d-block"></i>
-                            Очистить кеш
+                        <a href="{{ route('admin.import-games') }}" class="btn btn-dark w-100 py-3">
+                            <i class="fas fa-database fa-2x mb-2 d-block"></i>
+                            Импорт игр
                         </a>
                     </div>
                 </div>

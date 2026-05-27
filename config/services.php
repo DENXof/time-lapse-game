@@ -43,4 +43,8 @@ return [
     'steam' => [
         'api_key' => env('STEAM_API_KEY', ''),
     ],
+    'twitch' => [
+        'client_id' => env('TWITCH_CLIENT_ID', ''),
+        'client_secret' => env('TWITCH_CLIENT_SECRET', ''),
+    ],
 ];
