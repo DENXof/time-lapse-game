@@ -192,7 +192,7 @@ class GameImporterService
     }
 
     /**
-     * Импорт игр из IGDB (Twitch) - ИСПРАВЛЕНО с уникальным slug
+     * Импорт игр из IGDB (Twitch)
      */
     public function importFromIGDB($search, $limit = 50)
     {
@@ -206,11 +206,11 @@ class GameImporterService
             'Client-ID' => $this->twitchClientId,
             'Authorization' => 'Bearer ' . $token,
         ])->get('https://api.igdb.com/v4/games', [
-                    'search' => $search,
-                    'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
-                    'limit' => $limit,
-                    'where' => 'version_parent = null & category = 0'
-                ]);
+            'search' => $search,
+            'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
+            'limit' => $limit,
+            'where' => 'version_parent = null & category = 0'
+        ]);
 
         if (!$response->successful()) {
             Log::error('IGDB API error: ' . $response->body());
@@ -237,7 +237,6 @@ class GameImporterService
                 continue;
             }
 
-            // ========= ГЕНЕРАЦИЯ УНИКАЛЬНОГО SLUG =========
             $baseSlug = Str::slug($title);
             $slug = $baseSlug;
             $counter = 1;
@@ -246,7 +245,6 @@ class GameImporterService
                 $slug = $baseSlug . '-' . $counter;
                 $counter++;
             }
-            // ============================================
 
             $genreName = 'Other';
             if (isset($gameData['genres']) && is_array($gameData['genres']) && count($gameData['genres']) > 0) {
@@ -258,9 +256,9 @@ class GameImporterService
                         'Client-ID' => $this->twitchClientId,
                         'Authorization' => 'Bearer ' . $token,
                     ])->get('https://api.igdb.com/v4/genres', [
-                                'fields' => 'name',
-                                'where' => 'id = ' . $genreId
-                            ]);
+                        'fields' => 'name',
+                        'where' => 'id = ' . $genreId
+                    ]);
                     if ($genreResponse->successful() && isset($genreResponse->json()[0]['name'])) {
                         $genreName = $genreResponse->json()[0]['name'];
                     }
@@ -295,9 +293,9 @@ class GameImporterService
                             'Client-ID' => $this->twitchClientId,
                             'Authorization' => 'Bearer ' . $token,
                         ])->get('https://api.igdb.com/v4/platforms', [
-                                    'fields' => 'name',
-                                    'where' => 'id = ' . $platform
-                                ]);
+                            'fields' => 'name',
+                            'where' => 'id = ' . $platform
+                        ]);
                         if ($platformResponse->successful() && isset($platformResponse->json()[0]['name'])) {
                             $platforms[] = $platformResponse->json()[0]['name'];
                         }
@@ -362,7 +360,7 @@ class GameImporterService
     }
 
     /**
-     * Массовый импорт популярных игр (по годам)
+     * Массовый импорт популярных игр (по годам) - ИСПРАВЛЕНО
      */
     public function importPopularGamesByYear($year, $limit = 50)
     {
@@ -379,11 +377,11 @@ class GameImporterService
             'Client-ID' => $this->twitchClientId,
             'Authorization' => 'Bearer ' . $token,
         ])->get('https://api.igdb.com/v4/games', [
-                    'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
-                    'limit' => $limit,
-                    'where' => "first_release_date >= {$fromTimestamp} & first_release_date <= {$toTimestamp} & category = 0",
-                    'sort' => 'rating_desc'
-                ]);
+            'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
+            'limit' => $limit,
+            'where' => "first_release_date >= {$fromTimestamp} & first_release_date <= {$toTimestamp} & category = 0",
+            'sort' => 'rating_desc'
+        ]);
 
         if (!$response->successful()) {
             Log::error('IGDB API error: ' . $response->body());
@@ -391,10 +389,21 @@ class GameImporterService
         }
 
         $games = $response->json();
+
+        if (!is_array($games) || empty($games)) {
+            return 0;
+        }
+
         $imported = 0;
 
         foreach ($games as $gameData) {
+            // Пропускаем игры без названия
             if (!isset($gameData['name'])) {
+                continue;
+            }
+
+            // Пропускаем игры без даты релиза (ИСПРАВЛЕНИЕ ОШИБКИ)
+            if (!isset($gameData['first_release_date'])) {
                 continue;
             }
 
@@ -404,7 +413,7 @@ class GameImporterService
                 continue;
             }
 
-            // ========= ГЕНЕРАЦИЯ УНИКАЛЬНОГО SLUG =========
+            // Генерируем уникальный slug
             $baseSlug = Str::slug($title);
             $slug = $baseSlug;
             $counter = 1;
@@ -413,7 +422,6 @@ class GameImporterService
                 $slug = $baseSlug . '-' . $counter;
                 $counter++;
             }
-            // ============================================
 
             $genreName = 'Other';
             if (isset($gameData['genres']) && is_array($gameData['genres']) && count($gameData['genres']) > 0) {

@@ -34,6 +34,14 @@ Route::get('/calendar', [GameController::class, 'calendar'])->name('games.calend
 Route::get('/achievements', [AchievementController::class, 'index'])->name('achievements.index');
 
 // ============================================
+// ВОССТАНОВЛЕНИЕ ПАРОЛЯ (доступно всем)
+// ============================================
+Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
+Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
+
+// ============================================
 // АУТЕНТИФИКАЦИЯ ПОЛЬЗОВАТЕЛЕЙ (гости)
 // ============================================
 Route::middleware('guest')->group(function () {
@@ -126,13 +134,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('profile', [AdminProfileController::class, 'update'])->name('profile.update');
         Route::put('profile/password', [AdminProfileController::class, 'updatePassword'])->name('profile.password.update');
 
-        // Очистка кеша
         Route::get('clear-cache', function () {
             \Illuminate\Support\Facades\Cache::flush();
             return back()->with('success', 'Кеш успешно очищен!');
         })->name('admin.clear-cache');
 
-        // ========= НОВЫЕ МАРШРУТЫ ДЛЯ ИМПОРТА =========
         Route::get('import-games', function () {
             return view('admin.import-games');
         })->name('import-games');

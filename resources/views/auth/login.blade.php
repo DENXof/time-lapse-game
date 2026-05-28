@@ -59,7 +59,8 @@
                     </form>
 
                     <div class="text-center mt-3">
-                        <a href="{{ route('register') }}">Нет аккаунта? Зарегистрироваться</a>
+                        <a href="{{ route('register') }}" class="d-block mb-1">Нет аккаунта? Зарегистрироваться</a>
+                        <a href="{{ route('password.request') }}" class="text-muted small">Забыли пароль?</a>
                     </div>
                 </div>
             </div>
