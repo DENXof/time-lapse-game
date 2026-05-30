@@ -21,6 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'vk',
+        'github',
+        'steam',
+        'twitch',
+        'youtube',
     ];
 
     /**
@@ -164,7 +169,7 @@ class User extends Authenticatable
     public function receivedFriendRequests()
     {
         return $this->hasMany(Friendship::class, 'friend_id')
-                    ->where('status', 'pending');
+            ->where('status', 'pending');
     }
 
     /**
@@ -191,13 +196,13 @@ class User extends Authenticatable
      */
     public function isFriendWith($userId)
     {
-        return Friendship::where(function($query) use ($userId) {
-                    $query->where('user_id', $this->id)
-                          ->where('friend_id', $userId);
-                })->orWhere(function($query) use ($userId) {
-                    $query->where('user_id', $userId)
-                          ->where('friend_id', $this->id);
-                })->where('status', 'accepted')->exists();
+        return Friendship::where(function ($query) use ($userId) {
+            $query->where('user_id', $this->id)
+                ->where('friend_id', $userId);
+        })->orWhere(function ($query) use ($userId) {
+            $query->where('user_id', $userId)
+                ->where('friend_id', $this->id);
+        })->where('status', 'accepted')->exists();
     }
 
     /**
@@ -206,14 +211,14 @@ class User extends Authenticatable
     public function getFriendsIds()
     {
         $ids1 = $this->sentFriendRequests()
-                    ->where('status', 'accepted')
-                    ->pluck('friend_id')
-                    ->toArray();
+            ->where('status', 'accepted')
+            ->pluck('friend_id')
+            ->toArray();
 
         $ids2 = $this->receivedFriendRequests()
-                    ->where('status', 'accepted')
-                    ->pluck('user_id')
-                    ->toArray();
+            ->where('status', 'accepted')
+            ->pluck('user_id')
+            ->toArray();
 
         return array_merge($ids1, $ids2);
     }
@@ -238,10 +243,10 @@ class User extends Authenticatable
         $friendsIds = $this->getFriendsIds();
 
         return Activity::whereIn('user_id', $friendsIds)
-                       ->with('user', 'target')
-                       ->orderBy('created_at', 'desc')
-                       ->limit($limit)
-                       ->get();
+            ->with('user', 'target')
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     /**

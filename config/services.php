@@ -37,9 +37,6 @@ return [
     'youtube' => [
         'api_key' => env('YOUTUBE_API_KEY', ''),
     ],
-    'discord' => [
-        'webhook_url' => env('DISCORD_WEBHOOK_URL', ''),
-    ],
     'steam' => [
         'api_key' => env('STEAM_API_KEY', ''),
     ],

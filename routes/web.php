@@ -18,6 +18,8 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\AdminCommentController;
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\AdminManagementController;
+use App\Http\Controllers\Admin\AdminLogController;
 
 // ============================================
 // ПУБЛИЧНЫЕ МАРШРУТЫ (доступны всем)
@@ -34,7 +36,7 @@ Route::get('/calendar', [GameController::class, 'calendar'])->name('games.calend
 Route::get('/achievements', [AchievementController::class, 'index'])->name('achievements.index');
 
 // ============================================
-// ВОССТАНОВЛЕНИЕ ПАРОЛЯ (доступно всем)
+// ВОССТАНОВЛЕНИЕ ПАРОЛЯ ПОЛЬЗОВАТЕЛЕЙ
 // ============================================
 Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('password.request');
 Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
@@ -98,9 +100,16 @@ Route::middleware('auth')->group(function () {
 // АДМИНИСТРАТИВНАЯ ПАНЕЛЬ
 // ============================================
 Route::prefix('admin')->name('admin.')->group(function () {
+    // Аутентификация админов
     Route::get('login', [AdminAuthController::class, 'showLoginForm'])->name('login');
     Route::post('login', [AdminAuthController::class, 'login'])->name('login.post');
     Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
+
+    // Восстановление пароля для админа
+    Route::get('forgot-password', [AdminAuthController::class, 'showForgotForm'])->name('password.request');
+    Route::post('forgot-password', [AdminAuthController::class, 'sendResetLink'])->name('password.email');
+    Route::get('reset-password/{token}', [AdminAuthController::class, 'showResetForm'])->name('password.reset');
+    Route::post('reset-password', [AdminAuthController::class, 'resetPassword'])->name('password.update');
 
     Route::middleware(['admin'])->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -144,5 +153,20 @@ Route::prefix('admin')->name('admin.')->group(function () {
         })->name('import-games');
 
         Route::post('import-games/run', [GameController::class, 'runImport'])->name('import-games.run');
+
+        // ========= УПРАВЛЕНИЕ АДМИНИСТРАТОРАМИ =========
+        Route::prefix('admins')->name('admins.')->group(function () {
+            Route::get('/', [AdminManagementController::class, 'index'])->name('index');
+            Route::get('/create', [AdminManagementController::class, 'create'])->name('create');
+            Route::post('/', [AdminManagementController::class, 'store'])->name('store');
+            Route::get('/{admin}', [AdminManagementController::class, 'show'])->name('show');
+            Route::get('/{admin}/edit', [AdminManagementController::class, 'edit'])->name('edit');
+            Route::put('/{admin}', [AdminManagementController::class, 'update'])->name('update');
+            Route::post('/{admin}/reset-password', [AdminManagementController::class, 'resetPassword'])->name('reset-password');
+            Route::delete('/{admin}', [AdminManagementController::class, 'destroy'])->name('destroy');
+        });
+
+        // Логи администраторов
+        Route::get('admin-logs', [AdminLogController::class, 'index'])->name('admin-logs');
     });
 });

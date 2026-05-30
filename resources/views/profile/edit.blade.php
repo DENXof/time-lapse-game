@@ -42,24 +42,79 @@
                             @enderror
                         </div>
 
+                        <!-- Telegram -->
                         <div class="mb-3">
                             <label for="telegram" class="form-label">Telegram</label>
                             <input type="text" class="form-control @error('telegram') is-invalid @enderror"
-                                   id="telegram" name="telegram" value="{{ old('telegram', $user->telegram) }}">
+                                   id="telegram" name="telegram" value="{{ old('telegram', $user->telegram) }}"
+                                   placeholder="@username или username">
+                            <small class="text-muted">Укажите ваш Telegram username (без @ или с @)</small>
                             @error('telegram')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
+                        <!-- VK -->
                         <div class="mb-3">
-                            <label for="discord" class="form-label">Discord</label>
-                            <input type="text" class="form-control @error('discord') is-invalid @enderror"
-                                   id="discord" name="discord" value="{{ old('discord', $user->discord) }}">
-                            @error('discord')
+                            <label for="vk" class="form-label">ВКонтакте</label>
+                            <input type="text" class="form-control @error('vk') is-invalid @enderror"
+                                   id="vk" name="vk" value="{{ old('vk', $user->vk) }}"
+                                   placeholder="https://vk.com/username или username">
+                            <small class="text-muted">Ссылка на ваш профиль VK или ID</small>
+                            @error('vk')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
+                        <!-- GitHub -->
+                        <div class="mb-3">
+                            <label for="github" class="form-label">GitHub</label>
+                            <input type="text" class="form-control @error('github') is-invalid @enderror"
+                                   id="github" name="github" value="{{ old('github', $user->github) }}"
+                                   placeholder="https://github.com/username или username">
+                            <small class="text-muted">Ссылка на ваш GitHub профиль</small>
+                            @error('github')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Steam -->
+                        <div class="mb-3">
+                            <label for="steam" class="form-label">Steam</label>
+                            <input type="text" class="form-control @error('steam') is-invalid @enderror"
+                                   id="steam" name="steam" value="{{ old('steam', $user->steam) }}"
+                                   placeholder="https://steamcommunity.com/id/username или ID">
+                            <small class="text-muted">Ссылка на ваш Steam профиль</small>
+                            @error('steam')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Twitch -->
+                        <div class="mb-3">
+                            <label for="twitch" class="form-label">Twitch</label>
+                            <input type="text" class="form-control @error('twitch') is-invalid @enderror"
+                                   id="twitch" name="twitch" value="{{ old('twitch', $user->twitch) }}"
+                                   placeholder="https://twitch.tv/username или username">
+                            <small class="text-muted">Ссылка на ваш Twitch канал</small>
+                            @error('twitch')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- YouTube -->
+                        <div class="mb-3">
+                            <label for="youtube" class="form-label">YouTube</label>
+                            <input type="text" class="form-control @error('youtube') is-invalid @enderror"
+                                   id="youtube" name="youtube" value="{{ old('youtube', $user->youtube) }}"
+                                   placeholder="https://youtube.com/c/username или @username">
+                            <small class="text-muted">Ссылка на ваш YouTube канал</small>
+                            @error('youtube')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Аватар -->
                         <div class="mb-3">
                             <label for="avatar" class="form-label">Аватар</label>
                             @if($user->avatar)
@@ -70,6 +125,7 @@
                             @endif
                             <input type="file" class="form-control @error('avatar') is-invalid @enderror"
                                    id="avatar" name="avatar" accept="image/*">
+                            <small class="text-muted">Рекомендуемый размер: 500x500px, макс. 2MB</small>
                             @error('avatar')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

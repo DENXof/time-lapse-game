@@ -200,8 +200,19 @@
                         <i class="fas fa-cog"></i> Настройки
                     </a>
                     <a class="nav-link {{ request()->routeIs('admin.import-games') ? 'active' : '' }}" href="{{ route('admin.import-games') }}">
-    <i class="fas fa-database me-2"></i> Импорт игр
-</a>
+                        <i class="fas fa-database me-2"></i> Импорт игр
+                    </a>
+
+                    <!-- ========= УПРАВЛЕНИЕ АДМИНИСТРАТОРАМИ (только для суперадмина) ========= -->
+                    @if(Auth::guard('admin')->check() && Auth::guard('admin')->user()->isSuperAdmin())
+                        <a class="nav-link {{ request()->routeIs('admin.admins.*') ? 'active' : '' }}" href="{{ route('admin.admins.index') }}">
+                            <i class="fas fa-user-shield me-2"></i> Администраторы
+                        </a>
+                        <a class="nav-link {{ request()->routeIs('admin.admin-logs') ? 'active' : '' }}" href="{{ route('admin.admin-logs') }}">
+                            <i class="fas fa-history me-2"></i> Логи админов
+                        </a>
+                    @endif
+                    <!-- ======================================================================= -->
 
                     <div class="mt-4 pt-3 border-top border-secondary">
                         <a class="nav-link" href="{{ route('home') }}" target="_blank">
@@ -229,10 +240,15 @@
                                 <i class="fas fa-user text-primary"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow">
-                                <li><h6 class="dropdown-header">{{ Auth::user()->name ?? 'Администратор' }}</h6></li>
+                                <li><h6 class="dropdown-header">{{ Auth::guard('admin')->user()->name ?? 'Администратор' }}</h6></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{{ route('admin.profile.edit') }}">✏️ Редактировать профиль</a></li>
                                 <li><a class="dropdown-item" href="{{ route('home') }}">🌐 Перейти на сайт</a></li>
+                                @if(Auth::guard('admin')->check() && Auth::guard('admin')->user()->isSuperAdmin())
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ route('admin.admins.index') }}">👥 Управление админами</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('admin.admin-logs') }}">📋 Логи админов</a></li>
+                                @endif
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item text-danger" href="{{ route('admin.logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">🚪 Выйти</a></li>
                             </ul>

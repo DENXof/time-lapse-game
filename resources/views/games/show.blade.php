@@ -51,6 +51,28 @@
                                 </form>
                             @endauth
 
+                            {{-- БЛОК ОЦЕНКИ (только для авторизованных) --}}
+                            @auth
+                                <div class="mt-3 mb-3 p-3 bg-light rounded">
+                                    <p class="mb-2"><strong>Оценить игру:</strong></p>
+                                    <form action="{{ route('ratings.store', $game) }}" method="POST" id="rating-form">
+                                        @csrf
+                                        <div class="rating-stars d-flex gap-2 mb-2">
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                <label class="cursor-pointer" style="cursor: pointer;">
+                                                    <input type="radio" name="value" value="{{ $i }}"
+                                                           style="display: none;"
+                                                           onchange="document.getElementById('rating-form').submit()"
+                                                           {{ optional($game->userRating(Auth::user()))->value == $i ? 'checked' : '' }}>
+                                                    <i class="fas fa-star fs-3 {{ optional($game->userRating(Auth::user()))->value >= $i ? 'text-warning' : 'text-secondary' }}"></i>
+                                                </label>
+                                            @endfor
+                                        </div>
+                                    </form>
+                                    <small class="text-muted">Нажмите на звезду, чтобы оценить</small>
+                                </div>
+                            @endauth
+
                             <div class="mt-4">
                                 <h5>Разработчик</h5>
                                 <p>{{ $game->developer }}</p>
@@ -146,39 +168,39 @@
                 </div>
             </div>
 
-{{-- ССЫЛКА НА STEAM --}}
-<div class="card shadow-sm mt-4">
-    <div class="card-header bg-light">
-        <h4 class="mb-0">
-            <i class="fab fa-steam text-info me-2"></i>
-            Игра в Steam
-        </h4>
-    </div>
-    <div class="card-body text-center">
-        <a href="{{ $game->getSteamUrl() }}"
-           class="btn btn-success btn-lg px-4"
-           target="_blank"
-           rel="noopener noreferrer">
-            <i class="fab fa-steam me-2 fa-lg"></i>
-            @if($game->steam_app_id)
-                Открыть страницу в Steam
-            @else
-                Найти в Steam
-            @endif
-        </a>
-        <p class="text-muted mt-3 mb-0 small">
-            <i class="fas fa-external-link-alt me-1"></i>
-            Откроется в новой вкладке
-        </p>
-        @if(!$game->steam_app_id && auth()->check() && auth()->user()->isAdmin())
-            <div class="mt-3">
-                <a href="{{ route('admin.games.edit', $game->id) }}" class="btn btn-sm btn-outline-info">
-                    <i class="fas fa-edit me-1"></i>Указать Steam App ID
-                </a>
+            {{-- ССЫЛКА НА STEAM --}}
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0">
+                        <i class="fab fa-steam text-info me-2"></i>
+                        Игра в Steam
+                    </h4>
+                </div>
+                <div class="card-body text-center">
+                    <a href="{{ $game->getSteamUrl() }}"
+                       class="btn btn-success btn-lg px-4"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        <i class="fab fa-steam me-2 fa-lg"></i>
+                        @if($game->steam_app_id)
+                            Открыть страницу в Steam
+                        @else
+                            Найти в Steam
+                        @endif
+                    </a>
+                    <p class="text-muted mt-3 mb-0 small">
+                        <i class="fas fa-external-link-alt me-1"></i>
+                        Откроется в новой вкладке
+                    </p>
+                    @if(!$game->steam_app_id && auth()->check() && auth()->user()->isAdmin())
+                        <div class="mt-3">
+                            <a href="{{ route('admin.games.edit', $game->id) }}" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-edit me-1"></i>Указать Steam App ID
+                            </a>
+                        </div>
+                    @endif
+                </div>
             </div>
-        @endif
-    </div>
-</div>
         </div>
     </div>
 

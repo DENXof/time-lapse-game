@@ -1,29 +1,71 @@
 <?php
 namespace App\Models;
-use Illuminate\Foundation\Auth\User as Authenticatable; // Подключаем класс для аутентификации (чтобы админ мог входить в систему)
-use Illuminate\Notifications\Notifiable;    // Подключаем трейт для отправки уведомлений (например, писем на почту)
 
-class Admin extends Authenticatable // Класс Admin наследуется от Authenticatable - значит админ может логиниться
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Auth\Passwords\CanResetPassword as CanResetPasswordTrait;
+
+class Admin extends Authenticatable implements CanResetPassword
 {
-    use Notifiable; // Подключаем трейт Notifiable - чтобы админ мог получать уведомления
-    protected $table = 'admins';    //ТАБЛИЦА В БАЗЕ ДАННЫХ
-    protected $fillable = [ //$fillable - это "белый список" полей, которые можно заполнять через формы
-        'name',     // Имя администратора
-        'email',    // Email для входа
-        'password', // Пароль (будет захэширован)
+    use Notifiable, CanResetPasswordTrait;
+
+    protected $table = 'admins';
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'is_active',
     ];
-    // СКРЫТЫЕ ПОЛЯ
-    // Эти поля не будут видны при преобразовании модели в JSON/массив
-    // Например, если вернуть админа через API, пароль не покажется
+
     protected $hidden = [
-        'password',        // Пароль - скрываем нафиг!
-        'remember_token',  // Токен "запомнить меня" - тоже скрываем
+        'password',
+        'remember_token',
     ];
-    // ПРЕОБРАЗОВАНИЕ ТИПОВ
-    // Указываем Laravel, как автоматически преобразовывать поля
-    // при чтении из базы данных
+
     protected $casts = [
-        'email_verified_at' => 'datetime',  // Дата регистрации
-        'password' => 'hashed', // Пароль уже захэширован
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_active' => 'boolean',
+        'last_login_at' => 'datetime',
     ];
+
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\AdminResetPasswordNotification($token));
+    }
+
+    public function isSuperAdmin()
+    {
+        return $this->role === 'super_admin';
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function canManageAdmins()
+    {
+        return $this->role === 'super_admin';
+    }
+
+    public function log($action, $targetType, $targetId = null, $details = null)
+    {
+        return AdminLog::create([
+            'admin_id' => $this->id,
+            'action' => $action,
+            'target_type' => $targetType,
+            'target_id' => $targetId,
+            'details' => $details,
+            'ip_address' => request()->ip(),
+        ]);
+    }
+
+    public function logs()
+    {
+        return $this->hasMany(AdminLog::class);
+    }
 }
