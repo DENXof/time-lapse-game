@@ -53,6 +53,19 @@
                             </select>
                         </div>
 
+                        <!-- Фильтр по возрастному рейтингу -->
+                        <div class="mb-3">
+                            <label class="form-label">Возрастной рейтинг</label>
+                            <select name="age_rating" class="form-select">
+                                <option value="">Все</option>
+                                <option value="0+" {{ request('age_rating') == '0+' ? 'selected' : '' }}>0+ — Для всех</option>
+                                <option value="6+" {{ request('age_rating') == '6+' ? 'selected' : '' }}>6+</option>
+                                <option value="12+" {{ request('age_rating') == '12+' ? 'selected' : '' }}>12+</option>
+                                <option value="16+" {{ request('age_rating') == '16+' ? 'selected' : '' }}>16+</option>
+                                <option value="18+" {{ request('age_rating') == '18+' ? 'selected' : '' }}>18+</option>
+                            </select>
+                        </div>
+
                         <hr>
 
                         <div class="mb-3">
@@ -102,6 +115,7 @@
                                     <div class="mb-2">
                                         <span class="badge bg-primary">{{ $game->genre->name ?? 'Без жанра' }}</span>
                                         <span class="badge bg-secondary">{{ $game->release_year }}</span>
+                                        <span class="badge {{ $game->getAgeRatingBadgeColor() }} ms-1">{{ $game->age_rating }}</span>
                                     </div>
                                     @if($game->rating_count > 0)
                                         <div class="text-warning small">

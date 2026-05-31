@@ -29,6 +29,16 @@
                     <div class="col-md-8">
                         <div class="card-body">
                             <h1 class="card-title">{{ $game->title }}</h1>
+
+                            <!-- Предупреждение для игр 18+ -->
+                            @if($game->age_rating == '18+')
+                                <div class="alert alert-danger alert-dismissible fade show mt-2" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Внимание!</strong> Эта игра содержит контент для взрослых (18+).
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            @endif
+
                             <div class="mb-3">
                                 <span class="badge bg-primary">{{ $game->genre->name ?? 'Без жанра' }}</span>
                                 <span class="badge bg-secondary">{{ $game->release_year }} год</span>
@@ -39,6 +49,10 @@
                                     @else
                                         Нет оценок
                                     @endif
+                                </span>
+                                <span class="badge {{ $game->getAgeRatingBadgeColor() }}">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    {{ $game->age_rating }}
                                 </span>
                             </div>
 
@@ -164,6 +178,9 @@
                         <li><strong>Жанр:</strong> {{ $game->genre->name ?? 'Не указан' }}</li>
                         <li><strong>Просмотров:</strong> {{ $game->views_count ?? 0 }}</li>
                         <li><strong>Платформа:</strong> {{ $game->platform }}</li>
+                        <li><strong>Возрастной рейтинг:</strong>
+                            <span class="badge {{ $game->getAgeRatingBadgeColor() }}">{{ $game->age_rating }}</span>
+                        </li>
                     </ul>
                 </div>
             </div>

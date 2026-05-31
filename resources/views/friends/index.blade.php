@@ -39,8 +39,20 @@
                             <h5 class="mb-1">{{ $friend->name }}</h5>
                             <p class="text-muted small">{{ $friend->email }}</p>
 
+                            <!-- Статистика друга -->
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Очки</small>
+                                    <div class="fw-bold text-warning">{{ $friend->total_points ?? 0 }}</div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Достижений</small>
+                                    <div class="fw-bold text-info">{{ $friend->achievements()->count() }}</div>
+                                </div>
+                            </div>
+
                             <div class="d-grid gap-2">
-                                <a href="{{ route('profile.show', $friend->id) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route('profile.show', $friend) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-user me-2"></i>Профиль
                                 </a>
                                 <form action="{{ route('friends.remove', $friend) }}" method="POST">
@@ -66,6 +78,9 @@
             <i class="fas fa-user-friends fa-4x mb-3"></i>
             <p>У вас пока нет друзей.</p>
             <p>Найдите пользователей и добавьте их в друзья!</p>
+            <a href="{{ route('ranking') }}" class="btn btn-primary">
+                <i class="fas fa-chart-line me-2"></i>Найти пользователей
+            </a>
         </div>
     @endif
 </div>

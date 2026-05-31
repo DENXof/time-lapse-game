@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -164,7 +165,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Полученные заявки в друзья
+     * Полученные заявки в друзья (только ожидающие)
      */
     public function receivedFriendRequests()
     {
@@ -173,22 +174,36 @@ class User extends Authenticatable
     }
 
     /**
-     * Друзья (принятые заявки) - исправлено для работы с пагинацией
+     * Полученные заявки в друзья (все, включая принятые)
+     */
+    public function allReceivedFriendRequests()
+    {
+        return $this->hasMany(Friendship::class, 'friend_id');
+    }
+
+    /**
+     * Друзья (принятые заявки) - работает в обоих направлениях
      */
     public function friends()
     {
-        // Получаем ID друзей из обоих направлений
-        $friendIds = $this->sentFriendRequests()
+        // Друзья, где пользователь отправитель
+        $sentIds = $this->sentFriendRequests()
             ->where('status', 'accepted')
-            ->pluck('friend_id')
-            ->merge(
-                $this->receivedFriendRequests()
-                    ->where('status', 'accepted')
-                    ->pluck('user_id')
-            );
+            ->pluck('friend_id');
 
-        // Возвращаем query builder для пагинации
-        return User::whereIn('id', $friendIds);
+        // Друзья, где пользователь получатель
+        $receivedIds = $this->allReceivedFriendRequests()
+            ->where('status', 'accepted')
+            ->pluck('user_id');
+
+        // Объединяем оба списка
+        $friendIds = $sentIds->merge($receivedIds)->unique();
+
+        if ($friendIds->count() > 0) {
+            return User::whereIn('id', $friendIds);
+        }
+
+        return User::whereRaw('1 = 0');
     }
 
     /**
@@ -215,7 +230,7 @@ class User extends Authenticatable
             ->pluck('friend_id')
             ->toArray();
 
-        $ids2 = $this->receivedFriendRequests()
+        $ids2 = $this->allReceivedFriendRequests()
             ->where('status', 'accepted')
             ->pluck('user_id')
             ->toArray();

@@ -10,6 +10,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\AchievementController;
 use App\Http\Controllers\FriendController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\RankingController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GenreController;
@@ -34,6 +35,9 @@ Route::get('/new-releases', [GameController::class, 'newReleases'])->name('games
 Route::get('/random-game', [GameController::class, 'randomGame'])->name('games.random');
 Route::get('/calendar', [GameController::class, 'calendar'])->name('games.calendar');
 Route::get('/achievements', [AchievementController::class, 'index'])->name('achievements.index');
+
+// ========= РЕЙТИНГ ПОЛЬЗОВАТЕЛЕЙ =========
+Route::get('/ranking', [RankingController::class, 'index'])->name('ranking');
 
 // ============================================
 // ВОССТАНОВЛЕНИЕ ПАРОЛЯ ПОЛЬЗОВАТЕЛЕЙ

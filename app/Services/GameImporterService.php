@@ -206,11 +206,11 @@ class GameImporterService
             'Client-ID' => $this->twitchClientId,
             'Authorization' => 'Bearer ' . $token,
         ])->get('https://api.igdb.com/v4/games', [
-            'search' => $search,
-            'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
-            'limit' => $limit,
-            'where' => 'version_parent = null & category = 0'
-        ]);
+                    'search' => $search,
+                    'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
+                    'limit' => $limit,
+                    'where' => 'version_parent = null & category = 0'
+                ]);
 
         if (!$response->successful()) {
             Log::error('IGDB API error: ' . $response->body());
@@ -256,9 +256,9 @@ class GameImporterService
                         'Client-ID' => $this->twitchClientId,
                         'Authorization' => 'Bearer ' . $token,
                     ])->get('https://api.igdb.com/v4/genres', [
-                        'fields' => 'name',
-                        'where' => 'id = ' . $genreId
-                    ]);
+                                'fields' => 'name',
+                                'where' => 'id = ' . $genreId
+                            ]);
                     if ($genreResponse->successful() && isset($genreResponse->json()[0]['name'])) {
                         $genreName = $genreResponse->json()[0]['name'];
                     }
@@ -293,9 +293,9 @@ class GameImporterService
                             'Client-ID' => $this->twitchClientId,
                             'Authorization' => 'Bearer ' . $token,
                         ])->get('https://api.igdb.com/v4/platforms', [
-                            'fields' => 'name',
-                            'where' => 'id = ' . $platform
-                        ]);
+                                    'fields' => 'name',
+                                    'where' => 'id = ' . $platform
+                                ]);
                         if ($platformResponse->successful() && isset($platformResponse->json()[0]['name'])) {
                             $platforms[] = $platformResponse->json()[0]['name'];
                         }
@@ -377,11 +377,11 @@ class GameImporterService
             'Client-ID' => $this->twitchClientId,
             'Authorization' => 'Bearer ' . $token,
         ])->get('https://api.igdb.com/v4/games', [
-            'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
-            'limit' => $limit,
-            'where' => "first_release_date >= {$fromTimestamp} & first_release_date <= {$toTimestamp} & category = 0",
-            'sort' => 'rating_desc'
-        ]);
+                    'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
+                    'limit' => $limit,
+                    'where' => "first_release_date >= {$fromTimestamp} & first_release_date <= {$toTimestamp} & category = 0",
+                    'sort' => 'rating_desc'
+                ]);
 
         if (!$response->successful()) {
             Log::error('IGDB API error: ' . $response->body());
@@ -468,18 +468,20 @@ class GameImporterService
             }
 
             Game::create([
-                'title' => $title,
-                'slug' => $slug,
-                'release_year' => $releaseYear,
-                'developer' => $developer,
-                'publisher' => $developer,
-                'description' => $gameData['summary'] ?? 'Описание отсутствует',
-                'platform' => $platform,
+                'title' => $item['name'],
+                'slug' => Str::slug($item['name']),
+                'release_year' => $details['release_year'],
+                'developer' => $details['developer'] ?? 'Unknown',
+                'publisher' => $details['publisher'] ?? 'Unknown',
+                'description' => $details['description'] ?? 'Описание отсутствует',
+                'platform' => 'PC',
                 'genre_id' => $genre->id,
+                'steam_app_id' => $item['id'],
                 'cover_image' => $coverImage,
                 'views_count' => 0,
-                'rating_avg' => $gameData['rating'] ?? 0,
+                'rating_avg' => 0,
                 'rating_count' => 0,
+                'age_rating' => '0+',  // ДОБАВИТЬ
             ]);
 
             $imported++;

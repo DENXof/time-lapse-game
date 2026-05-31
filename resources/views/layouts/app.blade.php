@@ -61,18 +61,15 @@
                 padding-right: 15px;
             }
 
-            /* Улучшаем отступы на мобильных */
             .py-4 {
                 padding-top: 1rem !important;
                 padding-bottom: 1rem !important;
             }
 
-            /* Карточки игр на мобильных */
             .game-card-img {
                 height: 150px;
             }
 
-            /* Бейджи на мобильных */
             .badge {
                 font-size: 0.7rem;
                 padding: 4px 8px;
@@ -80,18 +77,15 @@
                 display: inline-block;
             }
 
-            /* Хлебные крошки */
             .breadcrumb {
                 font-size: 0.85rem;
             }
 
-            /* Кнопки */
             .btn {
                 padding: 8px 16px;
                 font-size: 0.9rem;
             }
 
-            /* Модальные окна */
             .modal-dialog {
                 margin: 10px;
             }
@@ -111,7 +105,6 @@
                 padding: 3px 6px;
             }
 
-            /* Скрываем некоторые тексты на очень маленьких экранах */
             .d-mobile-none {
                 display: none;
             }
@@ -178,7 +171,6 @@
                 transform: none;
             }
 
-            /* Уменьшаем внутренние отступы */
             .card-body {
                 padding: 1rem;
             }
@@ -295,7 +287,7 @@
         @media (max-width: 768px) {
             .form-control,
             .form-select {
-                font-size: 16px; /* Предотвращает масштабирование на iOS */
+                font-size: 16px;
             }
 
             label {
@@ -342,7 +334,6 @@
             z-index: 1100;
         }
 
-        /* Улучшенные отступы для сетки */
         .row {
             margin-right: -12px;
             margin-left: -12px;
@@ -353,7 +344,6 @@
             padding-left: 12px;
         }
 
-        /* Стили для аватаров */
         .avatar-sm {
             width: 32px;
             height: 32px;
@@ -372,12 +362,10 @@
             object-fit: cover;
         }
 
-        /* Ленивая загрузка изображений */
         img[loading="lazy"] {
             background-color: #f0f0f0;
         }
 
-        /* Улучшенный скролл для мобильных */
         .overflow-auto {
             -webkit-overflow-scrolling: touch;
         }
@@ -432,9 +420,14 @@
                             <i class="fas fa-trophy me-1"></i> Достижения
                         </a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('ranking') }}">
+                            <i class="fas fa-chart-line me-1"></i> Рейтинг
+                        </a>
+                    </li>
                 </ul>
 
-                {{-- БЫСТРЫЙ ПОИСК (адаптирован для мобильных) --}}
                 <form action="{{ route('games.index') }}" method="GET" class="d-flex my-2 my-lg-0">
                     <div class="input-group input-group-sm">
                         <input type="text" name="search" class="form-control"
@@ -446,7 +439,6 @@
                     </div>
                 </form>
 
-                {{-- БЛОК АВТОРИЗАЦИИ (адаптирован для мобильных) --}}
                 @auth
                     <li class="nav-item dropdown" style="list-style: none;">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">

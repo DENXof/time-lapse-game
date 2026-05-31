@@ -23,7 +23,8 @@ class Game extends Model
         'views_count',
         'rating_avg',
         'rating_count',
-        'steam_app_id'
+        'steam_app_id',
+        'age_rating'
     ];
 
     protected $appends = ['era_style', 'decade'];
@@ -112,5 +113,20 @@ class Game extends Model
             return 'https://store.steampowered.com/app/' . $this->steam_app_id;
         }
         return 'https://store.steampowered.com/search?term=' . urlencode($this->title);
+    }
+
+    /**
+     * Получить цвет бейджа возрастного рейтинга
+     */
+    public function getAgeRatingBadgeColor()
+    {
+        return match ($this->age_rating) {
+            '0+' => 'bg-success',
+            '6+' => 'bg-info',
+            '12+' => 'bg-primary',
+            '16+' => 'bg-warning',
+            '18+' => 'bg-danger',
+            default => 'bg-secondary',
+        };
     }
 }

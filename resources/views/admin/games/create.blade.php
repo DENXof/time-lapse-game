@@ -76,6 +76,21 @@
                         @error('platform')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
+                    <!-- Возрастной рейтинг -->
+                    <div class="mb-3">
+                        <label for="age_rating" class="form-label">Возрастной рейтинг</label>
+                        <select class="form-select @error('age_rating') is-invalid @enderror" id="age_rating" name="age_rating">
+                            <option value="0+" {{ old('age_rating', '0+') == '0+' ? 'selected' : '' }}>0+ — Для всех возрастов</option>
+                            <option value="6+" {{ old('age_rating') == '6+' ? 'selected' : '' }}>6+ — Для детей от 6 лет</option>
+                            <option value="12+" {{ old('age_rating') == '12+' ? 'selected' : '' }}>12+ — Для детей от 12 лет</option>
+                            <option value="16+" {{ old('age_rating') == '16+' ? 'selected' : '' }}>16+ — Для подростков от 16 лет</option>
+                            <option value="18+" {{ old('age_rating') == '18+' ? 'selected' : '' }}>18+ — Только для взрослых</option>
+                        </select>
+                        @error('age_rating')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     <div class="mb-3">
                         <label for="steam_app_id" class="form-label">Steam App ID</label>
                         <input type="text" class="form-control @error('steam_app_id') is-invalid @enderror" id="steam_app_id" name="steam_app_id" value="{{ old('steam_app_id') }}" placeholder="Например: 292030 для The Witcher 3">

@@ -7,6 +7,7 @@ use App\Models\Friendship;
 use App\Services\ActivityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FriendController extends Controller
 {
@@ -16,6 +17,8 @@ class FriendController extends Controller
     public function index()
     {
         $user = Auth::user();
+
+        // Получаем друзей через метод модели (исправленный)
         $friends = $user->friends()->paginate(20);
 
         return view('friends.index', compact('friends'));
@@ -27,8 +30,7 @@ class FriendController extends Controller
     public function requests()
     {
         $user = Auth::user();
-        // Исправлено: убрал ->with('user'), так как связь уже определена
-        $requests = $user->receivedFriendRequests()->paginate(20);
+        $requests = $user->receivedFriendRequests()->with('user')->paginate(20);
 
         return view('friends.requests', compact('requests'));
     }
@@ -57,7 +59,6 @@ class FriendController extends Controller
             } elseif ($existing->status === 'accepted') {
                 return back()->with('error', 'Вы уже друзья');
             } elseif ($existing->status === 'rejected') {
-                // Если заявка была отклонена, удаляем старую и создаём новую
                 $existing->delete();
             }
         }
@@ -70,7 +71,6 @@ class FriendController extends Controller
             'action_user_id' => Auth::id()
         ]);
 
-        // Логируем активность
         ActivityService::log('friend_request', $user);
 
         return back()->with('success', 'Заявка в друзья отправлена');
@@ -93,7 +93,6 @@ class FriendController extends Controller
 
         $friendship->accept();
 
-        // Логируем активность
         ActivityService::log('friend_accepted', $friendship->user);
 
         return back()->with('success', 'Заявка принята');

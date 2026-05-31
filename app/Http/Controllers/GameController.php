@@ -43,6 +43,11 @@ class GameController extends Controller
             $query->where('platform', 'like', '%' . $request->platform . '%');
         }
 
+        // ФИЛЬТР ПО ВОЗРАСТНОМУ РЕЙТИНГУ
+        if ($request->filled('age_rating')) {
+            $query->where('age_rating', $request->age_rating);
+        }
+
         $sort = $request->get('sort', 'newest');
 
         switch ($sort) {
@@ -224,6 +229,7 @@ class GameController extends Controller
             'developer' => 'required|string|max:255',
             'publisher' => 'nullable|string|max:255',
             'platform' => 'required|string|max:255',
+            'age_rating' => 'required|in:0+,6+,12+,16+,18+',
             'steam_app_id' => 'nullable|string|max:50',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -260,6 +266,7 @@ class GameController extends Controller
             'developer' => 'required|string|max:255',
             'publisher' => 'nullable|string|max:255',
             'platform' => 'required|string|max:255',
+            'age_rating' => 'required|in:0+,6+,12+,16+,18+',
             'steam_app_id' => 'nullable|string|max:50',
             'cover_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
