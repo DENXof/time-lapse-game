@@ -129,4 +129,57 @@ class Game extends Model
             default => 'bg-secondary',
         };
     }
+
+    /**
+     * Автоматическое определение возрастного рейтинга на основе описания и названия
+     */
+    public function detectAgeRating()
+    {
+        $text = strtolower($this->title . ' ' . ($this->description ?? ''));
+
+        // Ключевые слова для 18+
+        $keywords18 = [
+            'sex', 'sexual', 'nude', 'naked', 'porn', 'erotic', 'hentai',
+            'mature', 'adult', '18+', 'nsfw', 'gore', 'bloody', 'violence',
+            'murder', 'kill', 'corpse', 'torture', 'rape', 'drug', 'alcohol',
+            'horror', 'scary', 'blood', 'guts', 'dismember', 'cruel'
+        ];
+
+        // Ключевые слова для 16+
+        $keywords16 = [
+            'war', 'battle', 'fight', 'weapon', 'gun', 'shoot', 'kill',
+            'death', 'dead', 'dark', 'evil', 'demon', 'hell', 'monster',
+            'violent', 'aggressive', 'combat'
+        ];
+
+        // Ключевые слова для 12+
+        $keywords12 = [
+            'fantasy', 'magic', 'adventure', 'quest', 'monster', 'dragon',
+            'sword', 'spell', 'wizard', 'hero', 'villain'
+        ];
+
+        // Проверяем 18+
+        foreach ($keywords18 as $keyword) {
+            if (str_contains($text, $keyword)) {
+                return '18+';
+            }
+        }
+
+        // Проверяем 16+
+        foreach ($keywords16 as $keyword) {
+            if (str_contains($text, $keyword)) {
+                return '16+';
+            }
+        }
+
+        // Проверяем 12+
+        foreach ($keywords12 as $keyword) {
+            if (str_contains($text, $keyword)) {
+                return '12+';
+            }
+        }
+
+        // По умолчанию
+        return '0+';
+    }
 }

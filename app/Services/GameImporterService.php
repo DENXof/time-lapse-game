@@ -59,6 +59,45 @@ class GameImporterService
     }
 
     /**
+     * Определить возрастной рейтинг на основе названия и описания
+     */
+    private function detectAgeRating($title, $description)
+    {
+        $text = strtolower($title . ' ' . ($description ?? ''));
+
+        $keywords18 = [
+            'sex', 'sexual', 'nude', 'naked', 'porn', 'erotic', 'hentai',
+            'mature', 'adult', 'nsfw', 'gore', 'bloody', 'violence',
+            'murder', 'kill', 'corpse', 'torture', 'rape', 'drug', 'alcohol',
+            'horror', 'scary', 'blood', 'guts', 'dismember', 'cruel'
+        ];
+
+        $keywords16 = [
+            'war', 'battle', 'fight', 'weapon', 'gun', 'shoot', 'death',
+            'dead', 'dark', 'evil', 'demon', 'hell', 'violent', 'combat'
+        ];
+
+        $keywords12 = [
+            'fantasy', 'magic', 'adventure', 'quest', 'monster', 'dragon',
+            'sword', 'spell', 'wizard', 'hero', 'villain'
+        ];
+
+        foreach ($keywords18 as $keyword) {
+            if (str_contains($text, $keyword)) return '18+';
+        }
+
+        foreach ($keywords16 as $keyword) {
+            if (str_contains($text, $keyword)) return '16+';
+        }
+
+        foreach ($keywords12 as $keyword) {
+            if (str_contains($text, $keyword)) return '12+';
+        }
+
+        return '0+';
+    }
+
+    /**
      * Импорт популярных игр из Steam (по жанрам)
      */
     public function importFromSteamByGenre($genreName, $limit = 50)
@@ -115,6 +154,9 @@ class GameImporterService
                 Log::warning('Failed to download image for ' . $item['name'] . ': ' . $e->getMessage());
             }
 
+            // Определяем возрастной рейтинг
+            $ageRating = $this->detectAgeRating($item['name'], $details['description'] ?? '');
+
             Game::create([
                 'title' => $item['name'],
                 'slug' => Str::slug($item['name']),
@@ -129,6 +171,7 @@ class GameImporterService
                 'views_count' => 0,
                 'rating_avg' => 0,
                 'rating_count' => 0,
+                'age_rating' => $ageRating,
             ]);
 
             $imported++;
@@ -206,11 +249,11 @@ class GameImporterService
             'Client-ID' => $this->twitchClientId,
             'Authorization' => 'Bearer ' . $token,
         ])->get('https://api.igdb.com/v4/games', [
-                    'search' => $search,
-                    'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
-                    'limit' => $limit,
-                    'where' => 'version_parent = null & category = 0'
-                ]);
+            'search' => $search,
+            'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
+            'limit' => $limit,
+            'where' => 'version_parent = null & category = 0'
+        ]);
 
         if (!$response->successful()) {
             Log::error('IGDB API error: ' . $response->body());
@@ -256,9 +299,9 @@ class GameImporterService
                         'Client-ID' => $this->twitchClientId,
                         'Authorization' => 'Bearer ' . $token,
                     ])->get('https://api.igdb.com/v4/genres', [
-                                'fields' => 'name',
-                                'where' => 'id = ' . $genreId
-                            ]);
+                        'fields' => 'name',
+                        'where' => 'id = ' . $genreId
+                    ]);
                     if ($genreResponse->successful() && isset($genreResponse->json()[0]['name'])) {
                         $genreName = $genreResponse->json()[0]['name'];
                     }
@@ -293,9 +336,9 @@ class GameImporterService
                             'Client-ID' => $this->twitchClientId,
                             'Authorization' => 'Bearer ' . $token,
                         ])->get('https://api.igdb.com/v4/platforms', [
-                                    'fields' => 'name',
-                                    'where' => 'id = ' . $platform
-                                ]);
+                            'fields' => 'name',
+                            'where' => 'id = ' . $platform
+                        ]);
                         if ($platformResponse->successful() && isset($platformResponse->json()[0]['name'])) {
                             $platforms[] = $platformResponse->json()[0]['name'];
                         }
@@ -316,6 +359,9 @@ class GameImporterService
                 }
             }
 
+            // Определяем возрастной рейтинг
+            $ageRating = $this->detectAgeRating($title, $gameData['summary'] ?? '');
+
             Game::create([
                 'title' => $title,
                 'slug' => $slug,
@@ -329,6 +375,7 @@ class GameImporterService
                 'views_count' => 0,
                 'rating_avg' => $gameData['rating'] ?? 0,
                 'rating_count' => 0,
+                'age_rating' => $ageRating,
             ]);
 
             $imported++;
@@ -360,7 +407,7 @@ class GameImporterService
     }
 
     /**
-     * Массовый импорт популярных игр (по годам) - ИСПРАВЛЕНО
+     * Массовый импорт популярных игр (по годам)
      */
     public function importPopularGamesByYear($year, $limit = 50)
     {
@@ -377,11 +424,11 @@ class GameImporterService
             'Client-ID' => $this->twitchClientId,
             'Authorization' => 'Bearer ' . $token,
         ])->get('https://api.igdb.com/v4/games', [
-                    'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
-                    'limit' => $limit,
-                    'where' => "first_release_date >= {$fromTimestamp} & first_release_date <= {$toTimestamp} & category = 0",
-                    'sort' => 'rating_desc'
-                ]);
+            'fields' => 'name,first_release_date,summary,genres.name,cover.image_id,platforms.name,involved_companies.company.name,rating',
+            'limit' => $limit,
+            'where' => "first_release_date >= {$fromTimestamp} & first_release_date <= {$toTimestamp} & category = 0",
+            'sort' => 'rating_desc'
+        ]);
 
         if (!$response->successful()) {
             Log::error('IGDB API error: ' . $response->body());
@@ -397,12 +444,10 @@ class GameImporterService
         $imported = 0;
 
         foreach ($games as $gameData) {
-            // Пропускаем игры без названия
             if (!isset($gameData['name'])) {
                 continue;
             }
 
-            // Пропускаем игры без даты релиза (ИСПРАВЛЕНИЕ ОШИБКИ)
             if (!isset($gameData['first_release_date'])) {
                 continue;
             }
@@ -413,7 +458,6 @@ class GameImporterService
                 continue;
             }
 
-            // Генерируем уникальный slug
             $baseSlug = Str::slug($title);
             $slug = $baseSlug;
             $counter = 1;
@@ -467,21 +511,23 @@ class GameImporterService
                 }
             }
 
+            // Определяем возрастной рейтинг
+            $ageRating = $this->detectAgeRating($title, $gameData['summary'] ?? '');
+
             Game::create([
-                'title' => $item['name'],
-                'slug' => Str::slug($item['name']),
-                'release_year' => $details['release_year'],
-                'developer' => $details['developer'] ?? 'Unknown',
-                'publisher' => $details['publisher'] ?? 'Unknown',
-                'description' => $details['description'] ?? 'Описание отсутствует',
-                'platform' => 'PC',
+                'title' => $title,
+                'slug' => $slug,
+                'release_year' => $releaseYear,
+                'developer' => $developer,
+                'publisher' => $developer,
+                'description' => $gameData['summary'] ?? 'Описание отсутствует',
+                'platform' => $platform,
                 'genre_id' => $genre->id,
-                'steam_app_id' => $item['id'],
                 'cover_image' => $coverImage,
                 'views_count' => 0,
-                'rating_avg' => 0,
+                'rating_avg' => $gameData['rating'] ?? 0,
                 'rating_count' => 0,
-                'age_rating' => '0+',  // ДОБАВИТЬ
+                'age_rating' => $ageRating,
             ]);
 
             $imported++;
